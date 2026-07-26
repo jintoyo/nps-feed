@@ -10,7 +10,7 @@
   :root{
     --paper:#ECEDE8; --card:#FFFFFF; --ink:#16181D; --muted:#767B85;
     --rule:#D6D8D1; --accent:#0E4749; --warn:#8A4B10;
-    --buy:#12603F; --sell:#9B2C2C; --hold:#5E636C;
+    --sbuy:#0F5132; --buy:#3F8F66; --sell:#C25B52; --ssell:#8B1A1A; --hold:#5E636C;
     --sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
     --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   }
@@ -101,6 +101,27 @@
   select.sel{width:auto;cursor:pointer}
   .statusline{font-family:var(--mono);font-size:10.5px;color:var(--muted);
               line-height:1.6;margin-top:10px;padding-top:9px;border-top:1px solid var(--rule)}
+  .tierbox{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .tierbox select{font-family:var(--mono);font-size:11.5px;padding:7px 9px;
+        border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--ink);cursor:pointer}
+  .tierbox select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .custom{display:none;gap:6px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .custom.on{display:flex}
+  .custom .num{width:60px}
+  .readout{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .readout b{color:var(--ink);font-weight:600}
+  .scale{margin-top:14px;max-width:560px}
+  .band{display:flex;border-radius:2px;overflow:hidden}
+  .seg{flex:1;text-align:center;font-family:var(--mono);font-size:10px;
+       padding:6px 2px;color:#fff;letter-spacing:.02em;white-space:nowrap}
+  .seg.s4{background:var(--ssell)} .seg.s3{background:var(--sell)}
+  .seg.s0{background:var(--card);color:var(--hold);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .seg.s1{background:var(--buy)} .seg.s2{background:var(--sbuy)}
+  .ticks{display:flex;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:4px}
+  .ticks span{flex:1;text-align:right;padding-right:2px}
+  .ticks span:last-child{text-align:left;padding:0 0 0 2px}
+  .extra{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .extra i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:-1px}
   .statbar{display:flex;gap:0;margin-top:20px;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--card)}
   .stat{flex:1;padding:13px 15px;border-right:1px solid var(--rule)}
   .stat:last-child{border-right:0}
@@ -108,7 +129,7 @@
   .stat .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:5px;letter-spacing:-.02em}
 
   .rep{margin-top:20px;border-top:1px solid var(--rule)}
-  a.rrow{display:grid;grid-template-columns:1fr 132px 96px 72px;gap:0 16px;align-items:center;
+  a.rrow{display:grid;grid-template-columns:1fr 132px 98px 88px;gap:0 16px;align-items:center;
          padding:14px 14px 14px 0;text-decoration:none;color:inherit;border-bottom:1px solid var(--rule);position:relative;transition:background .14s}
   a.rrow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);
                  transform:scaleY(0);transform-origin:top;transition:transform .18s}
@@ -123,10 +144,12 @@
   .delta{font-family:var(--mono);font-size:14px;font-weight:600;text-align:right;letter-spacing:-.02em}
   .verdict{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;
            text-align:center;padding:5px 0;border-radius:2px;color:#fff}
-  .v-buy{background:var(--buy)} .v-sell{background:var(--sell)}
+  .v-sbuy{background:var(--sbuy)} .v-buy{background:var(--buy)}
+  .v-sell{background:var(--sell)} .v-ssell{background:var(--ssell)}
   .v-hold{background:transparent;color:var(--hold);border:1px solid var(--rule)}
   .v-new{background:var(--accent)} .v-exit{background:var(--ink)}
-  .d-up{color:var(--buy)} .d-dn{color:var(--sell)} .d-flat{color:var(--muted)}
+  .delta .sub{display:block;font-size:9.5px;font-weight:400;color:var(--muted);margin-top:2px}
+  .d-up{color:var(--sbuy)} .d-dn{color:var(--ssell)} .d-flat{color:var(--muted)}
   .newtag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
           background:var(--warn);color:#fff;padding:1px 5px;border-radius:2px;margin-left:7px;vertical-align:2px}
 
@@ -141,7 +164,7 @@
 
   @media (max-width:720px){
     .grid2{grid-template-columns:1fr}
-    a.rrow{grid-template-columns:1fr 78px;gap:8px 12px}
+    a.rrow{grid-template-columns:1fr 88px;gap:8px 12px}
     .bars{grid-column:1;text-align:left;padding-left:14px}
     .delta{grid-column:2;grid-row:1}
     .verdict{grid-column:2}
@@ -245,19 +268,49 @@
     </div>
 
     <div class="row" style="margin-top:16px">
-      <label class="toggle" style="font-size:11.5px">판정 임계치 ±
-        <input class="num" type="number" id="thr" value="0.10" step="0.05" min="0"> %p</label>
-      <label class="toggle" style="font-size:11.5px;margin-left:14px">
+      <div class="tierbox">
+        <select id="metric" title="지분율이 몇 %p 움직였는지(변화폭) 볼지, 원래 보유량 대비 몇 %인지(보유대비) 볼지">
+          <option value="abs" selected>변화폭 %p</option>
+          <option value="rel">보유대비 %</option>
+        </select>
+        <select id="tier"></select>
+        <span class="custom" id="customBox">
+          <input class="num" type="number" id="thrMild" value="1.00" step="0.01" min="0" title="1차 임계치">
+          <input class="num" type="number" id="thrStrong" value="3.00" step="0.01" min="0" title="2차 임계치">
+        </span>
+        <span class="readout" id="thrOut"></span>
+      </div>
+      <label class="toggle" style="font-size:11.5px;margin-left:6px">
         <input type="checkbox" id="allRows"> 이전 공시도 함께 보기</label>
       <span class="spacer"></span>
       <button class="btn ghost" id="copyRep">리포트 복사</button>
     </div>
 
+    <div class="scale" id="scale">
+      <div class="band">
+        <span class="seg s4">당장매도</span>
+        <span class="seg s3">매도</span>
+        <span class="seg s0">유지</span>
+        <span class="seg s1">매수</span>
+        <span class="seg s2">적극매수</span>
+      </div>
+      <div class="ticks">
+        <span id="tk1"></span><span id="tk2"></span><span></span><span id="tk3"></span><span id="tk4"></span>
+      </div>
+      <div class="extra">
+        <span><i style="background:var(--accent)"></i>신규 — 기준값에 없던 종목</span>
+        <span><i style="background:var(--ink)"></i>청산 — 보유 0%</span>
+      </div>
+    </div>
+
     <div class="rep" id="rep"></div>
 
     <div class="note">
-      판정 기준 — 기준값 대비 보유비율이 <b>+임계치 이상 = 매수</b>, <b>−임계치 이하 = 매도</b>, 그 사이는 유지.
-      기준값에 없던 종목은 <b>신규</b>, 비율 0%는 <b>청산</b>.<br>
+      임계치의 기준점은 자본시장법 §147의 <b>변동보고 의무 1%p</b>입니다. 보고서가 존재한다는 것 자체가
+      직전 보고 대비 1%p 이상 움직였다는 뜻이므로, 1%p 미만 증감은 대개 매매가 아니라
+      분모 변동(유상증자·자사주 소각·전환)이나 보유목적 변경에서 나옵니다.<br>
+      모든 비교는 <b>0.01%p 단위 정수</b>로 수행합니다. 부동소수점 오차가 없어 엑셀에서 같은 값으로
+      계산했을 때와 판정이 어긋나지 않습니다.<br>
       종목명을 누르면 DART 원문(접수번호 기준)이 새 탭에서 열립니다.
       대량보유 <b>변동보고 의무는 1%p 단위</b>라 그 사이 미세 변동은 공시에 잡히지 않습니다.<br>
       새 공시가 없으면 “변동 없음” 상태만 표시합니다.
@@ -562,10 +615,91 @@ $("expBase").addEventListener("click",()=>{
   a.download="nps-baseline-1Q.json";a.click();URL.revokeObjectURL(a.href);
 });
 
+/* --- 판정 민감도 -------------------------------------------------
+   임계치의 기준점: 자본시장법 §147 변동보고 의무 = 1%p.
+   보고서 존재 자체가 직전 보고 대비 1%p 이상 이동을 뜻하므로,
+   1%p 미만은 매매가 아닌 분모 변동/목적 변경일 가능성이 높다.
+   상대 프리셋은 관측 표본(n=126, 보유 3.68~13.32%, 중위 6.69%)에서
+   1%p가 상대 7.51~27.17%, 중위 14.97%에 대응한다는 사실에 맞췄다.
+------------------------------------------------------------------ */
+const PRESETS={
+  abs:{
+    all:  {mild:0.01, strong:1.00, name:"아주 예민하게",
+           why:"0.01%p 만 움직여도 표시. 분모 변동·목적 변경까지 전부 노출."},
+    law:  {mild:1.00, strong:2.00, name:"조금 예민하게",
+           why:"법정 변동보고 기준 1%p 부터 매수/매도. 2차는 2%p."},
+    std:  {mild:1.00, strong:3.00, name:"보통",
+           why:"1%p 부터 매수/매도, 3%p 부터 적극매수/당장매도. 권장값."},
+    major:{mild:2.00, strong:5.00, name:"큰 변화만",
+           why:"2%p 이상만 신호로. 5%p 면 보유 5% 선 이탈이 가능한 폭."},
+  },
+  rel:{
+    fine: {mild:7.51,  strong:20.00, name:"아주 예민하게",
+           why:"보유 대비 7.51%(대형 보유의 1%p)부터 매수/매도."},
+    std:  {mild:14.97, strong:35.00, name:"보통",
+           why:"보유 대비 14.97%(중간 보유의 1%p)부터 매수/매도. 권장값."},
+    coarse:{mild:27.17,strong:50.00, name:"큰 변화만",
+           why:"보유 대비 27.17%(소형 보유의 1%p) 이상만 신호로."},
+  }
+};
+const UNIT={abs:"%p", rel:"%"};
+
+/* 0.01 단위 정수로 환산 — 부동소수점 오차 제거 (엑셀 재현성) */
+const bp = x => Math.round((Number(x)||0)*100);
+
+function metric(){ return $("metric").value; }
+function rebuildTier(sel){
+  const m=metric(), P=PRESETS[m];
+  $("tier").innerHTML=Object.keys(P).map(k=>
+    `<option value="${k}" title="${P[k].why}">${P[k].name}</option>`).join("")
+    +`<option value="custom" title="기준이 되는 변화폭을 직접 넣습니다">직접 입력</option>`;
+  $("tier").value = (sel && (P[sel]||sel==="custom")) ? sel : "std";
+}
+function tierValues(){
+  const m=metric(), k=$("tier").value;
+  if(k!=="custom"){ const p=PRESETS[m][k]; return {...p, label:p.name, metric:m}; }
+  const mild=Math.abs(Number($("thrMild").value)||0);
+  let strong=Math.abs(Number($("thrStrong").value)||0);
+  if(bp(strong)<bp(mild)) strong=mild;      // 2차가 1차보다 작으면 같게 맞춘다
+  return {mild,strong,label:"직접 입력",name:"직접 입력",metric:m};
+}
+function syncTierUI(){
+  const custom=$("tier").value==="custom";
+  $("customBox").classList.toggle("on",custom);
+  if(!custom){ const p=PRESETS[metric()][$("tier").value];
+    $("thrMild").value=p.mild.toFixed(2); $("thrStrong").value=p.strong.toFixed(2); }
+  const t=tierValues(), u=UNIT[t.metric];
+  const f=x=>x.toFixed(2);
+  $("thrOut").innerHTML=`<b>±${f(t.mild)}${u}</b> 넘으면 매수·매도, <b>±${f(t.strong)}${u}</b> 넘으면 적극·당장`;
+  $("tk1").textContent="−"+f(t.strong);
+  $("tk2").textContent="−"+f(t.mild);
+  $("tk3").textContent="+"+f(t.mild);
+  $("tk4").textContent="+"+f(t.strong)+u;
+  const sel=$("tier").selectedOptions[0];
+  $("tier").title = sel ? sel.title : "";
+}
+
+/* 원본 보존: 반올림하지 않은 두 값을 모두 계산해 함께 보여준다 */
+function measure(cur,base){
+  const dBp = bp(cur)-bp(base);                       // 절대 증감, 0.01%p 단위
+  const rBp = bp(base)!==0 ? Math.round(dBp*10000/bp(base)) : null; // 상대 증감, 0.01% 단위
+  return {dBp,rBp};
+}
+function classify(m,t){
+  const val = t.metric==="abs" ? m.dBp : m.rBp;
+  if(val===null) return ["확인필요","v-hold"];
+  const mild=bp(t.mild), strong=bp(t.strong);
+  if(val>= strong) return ["적극매수","v-sbuy"];
+  if(val>= mild)   return ["매수","v-buy"];
+  if(val<=-strong) return ["당장매도","v-ssell"];
+  if(val<=-mild)   return ["매도","v-sell"];
+  return ["유지","v-hold"];
+}
+
 /* --- 리포트 --- */
 let LAST_TXT="";
 function runReport(){
-  const thr=Math.abs(parseFloat($("thr").value)||0.10);
+  const t=tierValues();
   const B=activeBase(), rep=$("rep");
   drawBase();
   if(!FILINGS.length){
@@ -580,38 +714,51 @@ function runReport(){
   const rows=show.map(f=>{
     const b = f.base!==null&&f.base!==undefined ? {rate:f.base,name:f.corp} : B[norm(f.corp)];
     const cur=f.rate;
-    let v,cls,delta=null;
-    if(f.verdict){ v=f.verdict;
-      cls={"매수":"v-buy","매도":"v-sell","유지":"v-hold","신규":"v-new","청산":"v-exit"}[v]||"v-hold";
-      if(b&&cur!==null)delta=cur-b.rate; }
-    else if(cur===null){v="확인필요";cls="v-hold";}
-    else if(cur===0){v="청산";cls="v-exit";delta=b?0-b.rate:null;}
-    else if(!b){v="신규";cls="v-new";}
-    else{ delta=cur-b.rate;
-      if(delta>=thr){v="매수";cls="v-buy";} else if(delta<=-thr){v="매도";cls="v-sell";} else {v="유지";cls="v-hold";} }
-    return {f,b,cur,v,cls,delta};
-  }).sort((a,b)=>Math.abs(b.delta??0)-Math.abs(a.delta??0));
+    let v,cls,m={dBp:null,rBp:null};
+    if(cur===null){v="확인필요";cls="v-hold";}
+    else if(!b){ v = cur===0?"청산":"신규"; cls = cur===0?"v-exit":"v-new"; }
+    else{ m=measure(cur,b.rate);
+      if(cur===0){v="청산";cls="v-exit";}
+      else [v,cls]=classify(m,t); }
+    const key = t.metric==="abs" ? m.dBp : m.rBp;
+    return {f,b,cur,v,cls,m,key};
+  }).sort((a,b)=>Math.abs(b.key??0)-Math.abs(a.key??0));
 
+  const sgn=n=>(n>0?"+":"");
   rep.innerHTML=rows.map(r=>{
     const url=r.f.no?`https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${r.f.no}`
                     :`https://dart.fss.or.kr/dsab007/main.do?option=corp`;
-    const dcls=r.delta===null?"d-flat":(r.delta>0?"d-up":(r.delta<0?"d-dn":"d-flat"));
-    const dtxt=r.delta===null?"—":(r.delta>0?"+":"")+r.delta.toFixed(2);
+    const k=r.key;
+    const dcls=(k===null||k===0)?"d-flat":(k>0?"d-up":"d-dn");
+    const abs = r.m.dBp===null?"—":sgn(r.m.dBp)+(r.m.dBp/100).toFixed(2)+"%p";
+    const rel = r.m.rBp===null?"—":sgn(r.m.rBp)+(r.m.rBp/100).toFixed(2)+"%";
+    const main = t.metric==="abs"?abs:rel, sub = t.metric==="abs"?rel:abs;
     const from=r.b?r.b.rate.toFixed(2)+"%":"—";
     const to=r.cur===null?"?":r.cur.toFixed(2)+"%";
+    const qty=r.f.qty?Number(r.f.qty).toLocaleString("ko-KR")+"주":"";
     return `<a class="rrow" href="${url}" target="_blank" rel="noopener noreferrer">
       <span class="nm"><b>${esc(r.f.corp)}${r.f.isNew?'<span class="newtag">NEW</span>':''}</b>
-        <span>${esc(fmtDate(r.f.dt))} · ${esc(r.f.rpt||"대량보유상황보고서")}</span></span>
-      <span class="bars">1Q <b>${from}</b> → 현재 <b>${to}</b></span>
-      <span class="delta ${dcls}">${dtxt}<span style="font-size:10px">%p</span></span>
+        <span>${esc(fmtDate(r.f.dt))} · ${esc(r.f.rpt||"대량보유상황보고서")}${qty?" · "+qty:""}</span></span>
+      <span class="bars">기준 <b>${from}</b> → 현재 <b>${to}</b></span>
+      <span class="delta ${dcls}">${main}<span class="sub">${sub}</span></span>
       <span class="verdict ${r.cls}">${r.v}</span></a>`;
   }).join("");
 
   LAST_TXT="국민연금 대량보유 변동 리포트 · "+new Date().toLocaleDateString("ko-KR")+
-    " (임계치 ±"+thr.toFixed(2)+"%p)\n"+
-    rows.map(r=>`${r.v}\t${r.f.corp}\t${r.b?r.b.rate.toFixed(2):"—"}% → ${r.cur===null?"?":r.cur.toFixed(2)+"%"}\t${r.delta===null?"—":(r.delta>0?"+":"")+r.delta.toFixed(2)+"%p"}\t${fmtDate(r.f.dt)}`).join("\n");
+    "\n측정 "+(t.metric==="abs"?"절대(%p)":"상대(%)")+" · "+t.label+
+    "\n종목\t판정\t기준\t현재\t절대(%p)\t상대(%)\t보유주식수\t접수일\n"+
+    rows.map(r=>[r.f.corp, r.v,
+      r.b?r.b.rate.toFixed(2):"", r.cur===null?"":r.cur.toFixed(2),
+      r.m.dBp===null?"":(r.m.dBp/100).toFixed(2),
+      r.m.rBp===null?"":(r.m.rBp/100).toFixed(2),
+      r.f.qty??"", fmtDate(r.f.dt)].join("\t")).join("\n");
 }
-$("thr").addEventListener("change",runReport);
+$("metric").addEventListener("change",()=>{
+  rebuildTier(); syncTierUI(); store("nps:metric",metric()); store("nps:tier",$("tier").value); runReport();});
+$("tier").addEventListener("change",()=>{syncTierUI();store("nps:tier",$("tier").value);runReport();});
+["thrMild","thrStrong"].forEach(id=>$(id).addEventListener("change",()=>{
+  store("nps:custom",{mild:$("thrMild").value,strong:$("thrStrong").value});
+  syncTierUI(); runReport();}));
 $("allRows").addEventListener("change",runReport);
 $("copyRep").addEventListener("click",async()=>{
   const b=$("copyRep");
@@ -626,6 +773,11 @@ $("copyRep").addEventListener("click",async()=>{
   const b=await store("nps:base"); if(b&&typeof b==="object")BASE=b;
   const s=await store("nps:seen"); if(Array.isArray(s))SEEN=new Set(s);
   const p=await store("nps:poll"); if(p)$("poll").value=p;
+  const mk=await store("nps:metric"); if(mk)$("metric").value=mk;
+  const tk=await store("nps:tier");
+  rebuildTier(tk||undefined);
+  const tc=await store("nps:custom"); if(tc){$("thrMild").value=tc.mild;$("thrStrong").value=tc.strong;}
+  syncTierUI();
   const u=await store("nps:url");
   drawBase(); runReport();
   if(u){ $("feedUrl").value=u; schedule(); pullFeed(u,true); }
