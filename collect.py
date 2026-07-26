@@ -10,7 +10,8 @@ nps-latest.json 을 만듭니다. 대시보드는 이 파일 주소만 보고 �
 환경변수
   DART_API_KEY   (필수)  https://opendart.fss.or.kr 무료 발급
   NPS_DAYS       (선택)  조회 일수, 기본 45 (약식보고가 매월 초에 몰림)
-  NPS_THRESHOLD  (선택)  판정 임계치 %p, 기본 0.10
+  NPS_THRESHOLD  (선택)  1차 임계치 %p, 기본 1.00 = 자본시장법 §147 변동보고 기준
+  NPS_STRONG     (선택)  2차 임계치 %p, 기본 3.00 (적극매수/당장매도)
 
 입력  baseline_1q.json   {"삼성전자": 7.28, "SK하이닉스": 8.11}
 출력  nps-latest.json
@@ -25,6 +26,7 @@ import sys
 import json
 import time
 import argparse
+import math
 from datetime import date, datetime, timedelta, timezone
 
 import requests
@@ -83,38 +85,96 @@ def list_filings(key: str, bgn: str, end: str) -> list[dict]:
     return out
 
 
-def nps_position(key: str, corp_code: str, rcept_no: str):
-    """발행회사의 대량보유 상황보고에서 국민연금 보유비율/주식수를 찾는다."""
-    try:
-        js = api("majorstock.json", key, corp_code=corp_code)
-    except requests.RequestException:
-        return None, None
-    if js.get("status") != "000":
-        return None, None
+_MAJOR_CACHE: dict = {}
 
-    rows = [r for r in js.get("list", []) if "국민연금" in str(r.get("repror", ""))]
+
+def nps_position(key: str, corp_code: str, rcept_no: str):
+    """발행회사의 대량보유 상황보고에서 국민연금 보유비율/주식수를 찾는다.
+    같은 회사를 여러 번 조회하지 않도록 회사 단위로 캐시한다(역산 시 필수)."""
+    if corp_code not in _MAJOR_CACHE:
+        try:
+            js = api("majorstock.json", key, corp_code=corp_code)
+            _MAJOR_CACHE[corp_code] = (js.get("list", [])
+                                       if js.get("status") == "000" else [])
+            time.sleep(SLEEP)
+        except requests.RequestException:
+            _MAJOR_CACHE[corp_code] = []
+    rows = [r for r in _MAJOR_CACHE[corp_code]
+            if "국민연금" in str(r.get("repror", ""))]
     if not rows:
         return None, None
-
     exact = [r for r in rows if str(r.get("rcept_no", "")) == str(rcept_no)]
     row = exact[0] if exact else sorted(rows, key=lambda r: str(r.get("rcept_dt", "")))[-1]
     return to_num(row.get("stkrt")), to_num(row.get("stkqy"))
 
 
 # ── 판정 ──────────────────────────────────────────────────────────
-def judge(rate, base, thr: float) -> tuple[str, float | None]:
+def bp(x) -> int:
+    """% 값을 0.01%p 단위 정수로. 부동소수점 오차를 제거해 엑셀과 결과를 일치시킨다.
+    JS Math.round 와 동일한 half-up 방식(파이썬 기본 round 는 banker's rounding)."""
+    v = (float(x) if x is not None else 0.0) * 100
+    return math.floor(v + 0.5) if v >= 0 else math.ceil(v - 0.5)
+
+
+def judge(rate, base, mild: float, strong: float):
+    """4단계 판정: 적극매수 / 매수 / 유지 / 매도 / 당장매도 (+ 신규·청산).
+
+    임계치 기준점은 자본시장법 §147 변동보고 의무인 1%p.
+    반환값 (판정, 절대증감 %p, 상대증감 %) — 둘 다 원본 보존용으로 함께 돌려준다.
+    """
     if rate is None:
-        return "확인필요", None
+        return "확인필요", None, None
     if base is None:
-        return ("청산", None) if rate == 0 else ("신규", None)
-    delta = round(rate - base, 4)
+        return ("청산" if rate == 0 else "신규"), None, None
+
+    d_bp = bp(rate) - bp(base)
+    b_bp = bp(base)
+    r_bp = (math.floor(d_bp * 10000 / b_bp + 0.5) if d_bp >= 0
+            else math.ceil(d_bp * 10000 / b_bp - 0.5)) if b_bp else None
+
+    delta = d_bp / 100
+    rel = r_bp / 100 if r_bp is not None else None
+
     if rate == 0:
-        return "청산", delta
-    if delta >= thr:
-        return "매수", delta
-    if delta <= -thr:
-        return "매도", delta
-    return "유지", delta
+        return "청산", delta, rel
+    m, s_ = bp(mild), bp(strong)
+    if d_bp >= s_:
+        return "적극매수", delta, rel
+    if d_bp >= m:
+        return "매수", delta, rel
+    if d_bp <= -s_:
+        return "당장매도", delta, rel
+    if d_bp <= -m:
+        return "매도", delta, rel
+    return "유지", delta, rel
+
+
+HISTORY_PATH = "nps-history.json"
+
+
+def load_history() -> dict:
+    """종목별 공시 이력. 없으면 빈 구조 — 이때 첫 실행이 자동으로 1년치를 역산한다."""
+    if os.path.exists(HISTORY_PATH):
+        with open(HISTORY_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    return {"filings": {}}
+
+
+def save_history(h: dict) -> None:
+    h["updated_at"] = datetime.now(KST).isoformat(timespec="seconds")
+    with open(HISTORY_PATH, "w", encoding="utf-8") as f:
+        json.dump(h, f, ensure_ascii=False, indent=1)
+
+
+def prev_of(history: dict, corp: str, rcept_no: str, date: str):
+    """같은 종목의 직전 공시(현재 건 제외, 날짜가 앞선 것 중 최신)를 찾는다."""
+    cand = [v for v in history["filings"].values()
+            if norm(v.get("corp", "")) == norm(corp)
+            and str(v.get("rcept_no")) != str(rcept_no)
+            and str(v.get("date", "")) < str(date)]
+    if not cand:
+        return None
+    return max(cand, key=lambda v: str(v.get("date", "")))
 
 
 def load_baseline(path: str) -> dict:
@@ -143,16 +203,25 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=int(os.environ.get("NPS_DAYS", 45)))
     ap.add_argument("--threshold", type=float,
-                    default=float(os.environ.get("NPS_THRESHOLD", 0.10)))
+                    default=float(os.environ.get("NPS_THRESHOLD", 1.00)),
+                    help="1차 임계치 %%p — 매수/매도 경계")
+    ap.add_argument("--strong", type=float,
+                    default=float(os.environ.get("NPS_STRONG", 3.00)),
+                    help="2차 임계치 %%p — 적극매수/당장매도 경계")
     ap.add_argument("--baseline", default="baseline_1q.json")
     ap.add_argument("--out", default="nps-latest.json")
     ap.add_argument("--csv", default="", help="CSV도 함께 저장하려면 경로 지정")
     args = ap.parse_args()
 
+    history = load_history()
+    if not history["filings"]:
+        print("  · 이력 파일 없음 → 최초 1회 자동 역산: 조회 기간을 365일로 확장")
+        args.days = max(args.days, 365)
+
     end = date.today()
     bgn = end - timedelta(days=max(args.days - 1, 0))
     bgn_s, end_s = f"{bgn:%Y%m%d}", f"{end:%Y%m%d}"
-    print(f"조회 {bgn_s} ~ {end_s} · 임계치 ±{args.threshold}%p")
+    print(f"조회 {bgn_s} ~ {end_s} · 임계치 ±{args.threshold}%p / ±{args.strong}%p")
 
     baseline = load_baseline(args.baseline)
 
@@ -180,18 +249,37 @@ def main() -> int:
 
         b = baseline.get(norm(corp))
         base_rate = b["rate"] if b else None
-        verdict, delta = judge(rate, base_rate, args.threshold)
+        verdict, delta, rel = judge(rate, base_rate, args.threshold, args.strong)
+
+        dt = r.get("rcept_dt", "")
+        # 이력에 먼저 넣지 말고, 직전 공시부터 찾는다
+        pv = prev_of(history, corp, rcept, dt)
+        prev_rate = pv.get("rate") if pv else None
+        prev_date = pv.get("date") if pv else None
+        d_prev = ((bp(rate) - bp(prev_rate)) / 100
+                  if rate is not None and prev_rate is not None else None)
+
+        # 이력 누적 (접수번호로 중복 방지)
+        if rcept:
+            history["filings"][rcept] = {
+                "corp": corp, "rcept_no": rcept, "date": dt,
+                "rate": rate, "qty": qty,
+            }
 
         filings.append({
             "corp": corp,
             "rcept_no": rcept,
-            "date": r.get("rcept_dt", ""),
+            "date": dt,
             "report": (r.get("report_nm") or "").strip(),
             "filer": r.get("flr_nm", ""),
             "rate": rate,
             "qty": qty,
             "base": base_rate,
             "delta": delta,
+            "delta_rel": rel,
+            "prev": prev_rate,
+            "prev_date": prev_date,
+            "delta_prev": d_prev,
             "verdict": verdict,
             "url": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcept}" if rcept else "",
         })
@@ -199,12 +287,25 @@ def main() -> int:
               f"{'' if rate is None else f'{rate:6.2f}%'}  {verdict}")
         time.sleep(SLEEP)
 
+    save_history(history)
+    hist_n = len(history["filings"])
+    print(f"  · 이력 누적 {hist_n}건 → {HISTORY_PATH}")
+
+    # 역산 실행이어도 대시보드 피드는 최근 45일 공시만 담는다
+    cutoff = f"{end - timedelta(days=44):%Y%m%d}"
+    recent = [f for f in filings if str(f["date"]) >= cutoff]
+    if len(recent) != len(filings):
+        print(f"  · 피드에는 최근 45일 {len(recent)}건만 수록 (이력에는 전체 보존)")
+    filings = recent
+
     payload = {
         "generated_at": datetime.now(KST).isoformat(timespec="seconds"),
         "period": {"from": bgn_s, "to": end_s},
         "threshold": args.threshold,
+        "threshold_strong": args.strong,
         "baseline_label": "2026 1Q",
         "baseline": {v["name"]: v["rate"] for v in baseline.values()},
+        "history_count": hist_n,
         "count": len(filings),
         "filings": filings,
     }
