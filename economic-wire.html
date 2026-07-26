@@ -270,8 +270,23 @@
 function esc(s){return String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
 const $=id=>document.getElementById(id);
 
-async function store(k,v){ try{ if(v===undefined){const r=await window.storage.get(k);return r?JSON.parse(r.value):null;}
-  await window.storage.set(k,JSON.stringify(v)); return v; }catch(e){ return v===undefined?null:v; } }
+const MEM={};
+async function store(k,v){
+  const read=(v===undefined);
+  // 1순위: 아티팩트 저장소
+  try{
+    if(read){const r=await window.storage.get(k);if(r)return JSON.parse(r.value);}
+    else{await window.storage.set(k,JSON.stringify(v));return v;}
+  }catch(e){}
+  // 2순위: 브라우저 localStorage (파일로 열거나 GitHub Pages로 열었을 때)
+  try{
+    if(read){const r=localStorage.getItem("ew:"+k);if(r!==null)return JSON.parse(r);}
+    else{localStorage.setItem("ew:"+k,JSON.stringify(v));return v;}
+  }catch(e){}
+  // 3순위: 이번 세션 동안만 기억
+  if(read)return MEM[k]!==undefined?MEM[k]:null;
+  MEM[k]=v; return v;
+}
 
 /* 탭 전환 */
 const TABS=[["t-news","p-news"],["t-nps","p-nps"]];
