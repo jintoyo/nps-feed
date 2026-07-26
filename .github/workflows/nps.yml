@@ -24,7 +24,7 @@ jobs:
       - name: 공시 수집
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-          NPS_DAYS: "14"
+          NPS_DAYS: "45"
           NPS_THRESHOLD: "0.10"
         run: python collect.py
 
