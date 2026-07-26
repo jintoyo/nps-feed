@@ -225,8 +225,23 @@ def main() -> int:
 
     baseline = load_baseline(args.baseline)
 
-    every = list_filings(key, bgn_s, end_s)
+    # DART 제약: corp_code 없는 목록 조회는 3개월까지만 허용 (status 100)
+    # → 80일 단위로 나눠 조회하면 어떤 달 조합에서도 제한에 걸리지 않는다
+    every, w_end = [], end
+    while w_end >= bgn:
+        w_bgn = max(bgn, w_end - timedelta(days=79))
+        chunk = list_filings(key, f"{w_bgn:%Y%m%d}", f"{w_end:%Y%m%d}")
+        print(f"  · {w_bgn:%Y%m%d}~{w_end:%Y%m%d}: {len(chunk)}건")
+        every.extend(chunk)
+        w_end = w_bgn - timedelta(days=1)
+        time.sleep(SLEEP)
     print(f"  · 대량보유상황보고서 전체 {len(every)}건")
+
+    # ★ 안전장치 1: 목록 자체를 못 받았으면 아무 파일도 건드리지 않는다
+    if not every:
+        print("  ! 목록 조회 결과 0건 — DART 오류 또는 호출 한도(status 020) 가능성.")
+        print("  ! 기존 nps-latest.json / nps-history.json 을 보존하고 종료합니다.")
+        return 0
 
     mine = [r for r in every if "국민연금" in str(r.get("flr_nm", ""))]
     print(f"  · 제출인 '국민연금' 포함 {len(mine)}건")
@@ -240,6 +255,11 @@ def main() -> int:
         print("  · [진단] 제출인 상위: " + ", ".join(f"{n}({c})" for n, c in top))
         print("  · [진단] 이 기간에 국민연금 보고가 없었을 수 있습니다. "
               "--days 를 60~90으로 늘려 다시 확인하세요.")
+
+    # ★ 안전장치 2: 국민연금 공시가 0건이면 이전의 정상 피드를 보존한다
+    if not mine:
+        print("  · 이 기간에 국민연금 공시 없음 — 기존 피드를 보존하고 종료합니다.")
+        return 0
 
     filings = []
     for i, r in enumerate(mine, 1):
@@ -287,8 +307,12 @@ def main() -> int:
               f"{'' if rate is None else f'{rate:6.2f}%'}  {verdict}")
         time.sleep(SLEEP)
 
-    save_history(history)
+    # ★ 안전장치 3: 빈 이력으로 기존 이력을 덮어쓰지 않는다
     hist_n = len(history["filings"])
+    if hist_n:
+        save_history(history)
+    else:
+        print("  ! 이력에 저장할 내용이 없어 파일을 만들지 않습니다.")
     print(f"  · 이력 누적 {hist_n}건 → {HISTORY_PATH}")
 
     # 역산 실행이어도 대시보드 피드는 최근 45일 공시만 담는다
