@@ -9,7 +9,7 @@ nps-latest.json 을 만듭니다. 대시보드는 이 파일 주소만 보고 �
 
 환경변수
   DART_API_KEY   (필수)  https://opendart.fss.or.kr 무료 발급
-  NPS_DAYS       (선택)  조회 일수, 기본 7
+  NPS_DAYS       (선택)  조회 일수, 기본 45 (약식보고가 매월 초에 몰림)
   NPS_THRESHOLD  (선택)  판정 임계치 %p, 기본 0.10
 
 입력  baseline_1q.json   {"삼성전자": 7.28, "SK하이닉스": 8.11}
@@ -141,7 +141,7 @@ def main() -> int:
         return 1
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("--days", type=int, default=int(os.environ.get("NPS_DAYS", 7)))
+    ap.add_argument("--days", type=int, default=int(os.environ.get("NPS_DAYS", 45)))
     ap.add_argument("--threshold", type=float,
                     default=float(os.environ.get("NPS_THRESHOLD", 0.10)))
     ap.add_argument("--baseline", default="baseline_1q.json")
@@ -159,8 +159,18 @@ def main() -> int:
     every = list_filings(key, bgn_s, end_s)
     print(f"  · 대량보유상황보고서 전체 {len(every)}건")
 
-    mine = [r for r in every if FILER in str(r.get("flr_nm", ""))]
-    print(f"  · 제출인 '{FILER}' {len(mine)}건")
+    mine = [r for r in every if "국민연금" in str(r.get("flr_nm", ""))]
+    print(f"  · 제출인 '국민연금' 포함 {len(mine)}건")
+
+    if not mine and every:
+        from collections import Counter
+        pens = sorted({str(r.get("flr_nm", "")) for r in every
+                       if "연금" in str(r.get("flr_nm", ""))})
+        print(f"  · [진단] '연금' 포함 제출인: {pens if pens else '없음'}")
+        top = Counter(str(r.get("flr_nm", "")) for r in every).most_common(8)
+        print("  · [진단] 제출인 상위: " + ", ".join(f"{n}({c})" for n, c in top))
+        print("  · [진단] 이 기간에 국민연금 보고가 없었을 수 있습니다. "
+              "--days 를 60~90으로 늘려 다시 확인하세요.")
 
     filings = []
     for i, r in enumerate(mine, 1):
