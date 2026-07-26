@@ -108,6 +108,33 @@
   .custom{display:none;gap:6px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
   .custom.on{display:flex}
   .custom .num{width:60px}
+  .indgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:14px 16px 13px}
+  .card .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .card .v{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.02em;margin-top:7px;line-height:1.1}
+  .card .v small{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+  .card .chg{font-family:var(--mono);font-size:11.5px;margin-top:4px}
+  .card .why{font-size:12px;line-height:1.55;margin-top:9px;padding-top:9px;border-top:1px solid var(--rule);word-break:keep-all}
+  .why b{font-weight:700}
+  .up{color:var(--sbuy)} .dn{color:var(--ssell)} .flat{color:var(--muted)}
+  .warn-t{color:var(--warn)}
+  /* 게이지 */
+  .gauge{margin-top:10px}
+  .gtrack{display:flex;height:10px;border-radius:5px;overflow:hidden}
+  .gtrack i{flex:1}
+  .gz1{background:#2F7D5B}.gz2{background:#8FBC8F}.gz3{background:#D9C87C}.gz4{background:#C97B5A}.gz5{background:#8B1A1A}
+  .gneedle{position:relative;height:0}
+  .gneedle b{position:absolute;top:-15px;width:2px;height:20px;background:var(--ink);transform:translateX(-1px)}
+  .glabels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:5px}
+  /* 신호 세기 */
+  .sig{display:inline-flex;gap:3px;vertical-align:-1px;margin-left:6px}
+  .sig i{width:6px;height:11px;background:var(--rule);border-radius:1px}
+  .sig i.on{background:var(--ssell)}
+  .sig.buyside i.on{background:var(--sbuy)}
+  /* 주도주 목록 */
+  .lead{display:flex;gap:14px;margin-top:8px;font-family:var(--mono);font-size:13px}
+  .lead span b{font-weight:600}
+  @media (max-width:720px){ .indgrid{grid-template-columns:1fr} }
   .readout{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
   .readout b{color:var(--ink);font-weight:600}
   .scale{margin-top:14px;max-width:560px}
@@ -141,6 +168,8 @@
   .nm span{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:block;margin-top:3px}
   .bars{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap}
   .bars b{color:var(--ink);font-weight:600}
+  .bars .prevline{display:block;font-size:9.5px;color:var(--muted);margin-top:3px}
+  .bars .prevline b{font-size:9.5px;font-weight:600}
   .delta{font-family:var(--mono);font-size:14px;font-weight:600;text-align:right;letter-spacing:-.02em}
   .verdict{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;
            text-align:center;padding:5px 0;border-radius:2px;color:#fff}
@@ -191,14 +220,31 @@
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="t-news" aria-selected="true" aria-controls="p-news">
-      <span class="n">01</span>경제 헤드라인</button>
+    <button class="tab" role="tab" id="t-ind" aria-selected="true" aria-controls="p-ind">
+      <span class="n">01</span>핵심 지표</button>
+    <button class="tab" role="tab" id="t-news" aria-selected="false" aria-controls="p-news">
+      <span class="n">02</span>경제 헤드라인</button>
     <button class="tab" role="tab" id="t-nps" aria-selected="false" aria-controls="p-nps">
-      <span class="n">02</span>국민연금 지분공시</button>
+      <span class="n">03</span>국민연금 지분공시</button>
   </div>
 
+  <!-- ══════════ 탭 1 : 핵심 지표 ══════════ -->
+  <section class="panel" id="p-ind" role="tabpanel" aria-labelledby="t-ind">
+    <div class="row" style="margin-top:16px">
+      <span class="statusline" id="indStat" style="margin:0;border:0;padding:0">아직 불러온 값이 없습니다. 오른쪽 버튼으로 불러오세요.</span>
+      <span class="spacer"></span>
+      <button class="btn" id="indBtn">지표 불러오기</button>
+    </div>
+    <div class="indgrid" id="indGrid"></div>
+    <div class="note">
+      값은 버튼을 누를 때 웹 검색으로 가져오며, 출처는 CNBC·Investing.com·MarketWatch·CNN(공포&탐욕)·WGB(CDS) 등
+      공개 시세 페이지입니다. 장중에는 수 분 정도 지연될 수 있습니다.<br>
+      해석 문구는 값에서 자동 계산됩니다 — 방향 참고용이지 매매 지시가 아닙니다.
+    </div>
+  </section>
+
   <!-- ══════════ 탭 1 ══════════ -->
-  <section class="panel" id="p-news" role="tabpanel" aria-labelledby="t-news">
+  <section class="panel" id="p-news" role="tabpanel" aria-labelledby="t-news" hidden>
     <div class="filters">
       <button class="chip" data-f="ALL" aria-pressed="true">ALL</button>
       <button class="chip" data-f="US" aria-pressed="false">US 미국</button>
@@ -342,14 +388,177 @@ async function store(k,v){
 }
 
 /* 탭 전환 */
-const TABS=[["t-news","p-news"],["t-nps","p-nps"]];
-TABS.forEach(([t,p])=>$(t).addEventListener("click",()=>{
+const TABS=[["t-ind","p-ind"],["t-news","p-news"],["t-nps","p-nps"]];
+function selectTab(t){
   TABS.forEach(([tt,pp])=>{const on=tt===t;$(tt).setAttribute("aria-selected",String(on));$(pp).hidden=!on;});
   $("btn").style.display = t==="t-news" ? "" : "none";
   $("stamp").style.display = t==="t-news" ? "" : "none";
-}));
+}
+TABS.forEach(([t])=>$(t).addEventListener("click",()=>selectTab(t)));
+selectTab("t-ind");
 
-/* ══════════════════ 탭 1 : 뉴스 ══════════════════ */
+/* ══════════════════ 탭 1 : 핵심 지표 ══════════════════ */
+let IND = null;   // {ts, us10y:{v,chg}, ...}
+
+const sgn2=(n,d=2)=>(n>0?"+":"")+Number(n).toFixed(d);
+const cls3=n=>n>0.0001?"up":(n<-0.0001?"dn":"flat");
+
+/* 해석은 전부 로컬 계산 — 검색 결과에는 숫자만 요구한다 */
+const IND_DEFS=[
+ {id:"us10y", name:"미국 10년물 국채 금리", unit:"%",
+  why:d=>{const c=d.chg??0;
+    if(c>=0.03) return `<b class="warn-t">금리 상승</b> → 주식·부동산에 하락 압력`;
+    if(c<=-0.03) return `<b class="up">금리 하락</b> → 주식·부동산에 우호적`;
+    return `보합 — 금리발 압력 크지 않음`;}},
+ {id:"dxy", name:"달러 인덱스 (DXY)", unit:"",
+  why:d=>{const c=d.chg??0;
+    if(c>=0.3) return `<b class="warn-t">달러 강세</b> → 신흥국·원화 자산에서 자금 이탈 압력`;
+    if(c<=-0.3) return `<b class="up">달러 약세</b> → 위험자산에 우호적`;
+    return `보합`;}},
+ {id:"usdkrw", name:"원/달러 환율 (NDF)", unit:"원",
+  why:d=>{const c=d.chg??0, a=Math.abs(c);
+    const lv=a>=8?3:(a>=4?2:(a>=1?1:0));
+    const bars=`<span class="sig${c<0?' buyside':''}">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join("")}</span>`;
+    if(c>=1) return `환율 상승 → <b class="warn-t">외국인 매도 신호</b> ${bars} ${lv===3?"강":lv===2?"중":"약"}`;
+    if(c<=-1) return `환율 하락 → <b class="up">외국인 수급 우호</b> ${bars}`;
+    return `보합 — 외국인 수급 중립`;}},
+ {id:"vix", name:"VIX 공포지수", unit:"", type:"gauge", max:50,
+  zones:["안정","보통","경계","불안","공포"], cuts:[15,20,25,32],
+  why:d=>{const v=d.v??0;
+    if(v<15) return `시장 <b class="up">안정</b> 구간`;
+    if(v<20) return `평상 수준의 변동성`;
+    if(v<32) return `<b class="warn-t">불안</b> — 변동성 확대 구간`;
+    return `<b class="dn">공포</b> — 급락 동반 가능 구간`;}},
+ {id:"fng", name:"공포 & 탐욕 지수 (CNN)", unit:"", type:"gauge", max:100,
+  zones:["극단공포","공포","중립","탐욕","극단탐욕"], cuts:[25,45,55,75],
+  why:d=>{const v=d.v??50;
+    if(v<=25) return `<b class="up">극단적 공포</b> → 역발상 <b>매수</b> 참고 구간`;
+    if(v<45) return `공포 우위 — 저가 매수 관심 구간`;
+    if(v<=55) return `중립`;
+    if(v<75) return `탐욕 우위 — 추격 매수 주의`;
+    return `<b class="dn">극단적 탐욕</b> → <b>매도</b>·차익실현 참고 구간`;}},
+ {id:"btc", name:"비트코인 (BTC/USD)", unit:"$", fmt:v=>Number(v).toLocaleString("en-US"),
+  why:d=>{const c=d.chg??0;
+    if(c>=2) return `<b class="up">위험자산 선호 회복</b>의 선행 신호`;
+    if(c<=-2) return `<b class="warn-t">위험 회피</b> 심리 확산의 선행 신호`;
+    return `보합 — 위험선호 중립`;}},
+ {id:"futures", name:"미국 주가지수 선물", unit:"", type:"fut",
+  why:d=>{const a=((d.sp??0)+(d.nq??0))/2;
+    if(a>=0.3) return `<b class="up">상승</b> — 미 증시 개장 전 분위기 우호적`;
+    if(a<=-0.3) return `<b class="dn">하락</b> — 개장 전 위험 회피 분위기`;
+    return `보합 출발 예상`;}},
+ {id:"wti", name:"국제 유가 (WTI)", unit:"$",
+  why:d=>{const c=d.chg??0;
+    if(c>=3) return `<b class="warn-t">급등</b> — 기업 비용 부담·인플레 압력`;
+    if(c<=-3) return `<b class="dn">급락</b> — 경기침체 우려 신호일 수 있음`;
+    if(c>=1) return `상승 — 비용 압력 소폭 확대`;
+    if(c<=-1) return `하락 — 비용 부담 완화`;
+    return `보합`;}},
+ {id:"leaders", name:"글로벌 주도주 마감", unit:"", type:"lead",
+  why:d=>{const arr=d.list||[]; if(!arr.length) return "—";
+    const up=arr.filter(x=>x.chg>0).length;
+    if(up===arr.length) return `주도주 <b class="up">동반 상승</b> — 위험선호 유지`;
+    if(up===0) return `주도주 <b class="dn">동반 하락</b> — 시장 추세 약화 신호`;
+    return `혼조 — 종목별 차별화`;}},
+ {id:"cds", name:"한국 CDS 프리미엄 (5Y)", unit:"bp",
+  why:d=>{const v=d.v??0;
+    if(v<30) return `<b class="up">낮음</b> — 한국 신용도에 대한 외부 시선 안정적`;
+    if(v<=50) return `보통 — 평상 범위`;
+    if(v<=80) return `<b class="warn-t">경계</b> — 대외 불안이 한국물에 반영되는 중`;
+    return `<b class="dn">높음</b> — 국가 신용 위험 인식 뚜렷`;}},
+];
+
+function gauge(def,v){
+  const pos=Math.max(0,Math.min(100, v/def.max*100));
+  const cutLbls=[0,...def.cuts,def.max];
+  return `<div class="gauge">
+    <div class="gtrack"><i class="gz1"></i><i class="gz2"></i><i class="gz3"></i><i class="gz4"></i><i class="gz5"></i></div>
+    <div class="gneedle"><b style="left:${pos}%"></b></div>
+    <div class="glabels">${def.zones.map(z=>`<span>${z}</span>`).join("")}</div>
+  </div>`;
+}
+
+function renderInd(){
+  const g=$("indGrid");
+  if(!IND){ g.innerHTML=IND_DEFS.map(d=>`<div class="card"><div class="k">${d.name}</div>
+    <div class="v flat">—</div><div class="why flat">지표 불러오기를 누르면 표시됩니다</div></div>`).join(""); return; }
+  g.innerHTML=IND_DEFS.map(def=>{
+    const d=IND[def.id]||{};
+    let body="";
+    if(def.type==="gauge"){
+      const v=d.v;
+      body = v===undefined||v===null
+        ? `<div class="v flat">—</div>`
+        : `<div class="v">${Number(v).toFixed(def.id==="fng"?0:2)}</div>${gauge(def,v)}`;
+    }else if(def.type==="fut"){
+      body = (d.sp===undefined&&d.nq===undefined) ? `<div class="v flat">—</div>`
+        : `<div class="lead">
+             <span>S&P500 <b class="${cls3(d.sp??0)}">${sgn2(d.sp??0)}%</b></span>
+             <span>나스닥 <b class="${cls3(d.nq??0)}">${sgn2(d.nq??0)}%</b></span></div>`;
+    }else if(def.type==="lead"){
+      const arr=d.list||[];
+      body = !arr.length ? `<div class="v flat">—</div>`
+        : `<div class="lead">${arr.map(x=>
+            `<span>${esc(x.t)} <b class="${cls3(x.chg)}">${sgn2(x.chg)}%</b></span>`).join("")}</div>`;
+    }else{
+      const v=d.v;
+      body = v===undefined||v===null ? `<div class="v flat">—</div>`
+        : `<div class="v">${def.fmt?def.fmt(v):Number(v).toFixed(2)}<small>${def.unit}</small></div>`
+          +(d.chg!==undefined&&d.chg!==null
+            ?`<div class="chg ${cls3(d.chg)}">${sgn2(d.chg)}${def.id==="us10y"?"%p":def.id==="usdkrw"?"원":def.id==="wti"||def.id==="btc"?"%":""} (전일比)</div>`:"");
+    }
+    return `<div class="card"><div class="k">${def.name}</div>${body}
+      <div class="why">${def.why(d)}</div></div>`;
+  }).join("");
+}
+
+function indPrompt(part){
+  const common=`아래 JSON 만 출력하세요. 설명·코드펜스 금지. 웹 검색으로 현재(최신) 값을 확인하고, 못 찾은 항목은 null.`;
+  if(part===1) return `${common}
+찾을 값: 1) 미국 10년물 국채 금리(%)와 전일 대비 변동(%p) 2) 달러 인덱스 DXY 와 전일 대비 3) 원/달러 환율(원)과 전일 대비(원) — 역외 NDF 우선, 없으면 서울환시 종가 4) 한국 5년물 CDS 프리미엄(bp)
+{"us10y":{"v":0,"chg":0},"dxy":{"v":0,"chg":0},"usdkrw":{"v":0,"chg":0},"cds":{"v":0,"chg":0}}`;
+  return `${common}
+찾을 값: 1) VIX 지수 2) CNN Fear & Greed Index (0~100 정수) 3) 비트코인 달러 시세와 24시간 등락률(%) 4) S&P500 선물과 나스닥100 선물의 등락률(%) 5) WTI 유가($)와 전일 등락률(%) 6) 엔비디아(NVDA)·테슬라(TSLA) 직전 정규장 등락률(%)
+{"vix":{"v":0},"fng":{"v":0},"btc":{"v":0,"chg":0},"futures":{"sp":0,"nq":0},"wti":{"v":0,"chg":0},"leaders":{"list":[{"t":"NVDA","chg":0},{"t":"TSLA","chg":0}]}}`;
+}
+
+async function fetchIndPart(part){
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,
+      messages:[{role:"user",content:indPrompt(part)}],
+      tools:[{type:"web_search_20250305",name:"web_search"}]})});
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  const data=await res.json();
+  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+  const m=text.replace(/```json|```/g,"").match(/\{[\s\S]*\}/);
+  return m?JSON.parse(m[0]):{};
+}
+
+$("indBtn").addEventListener("click",async()=>{
+  const b=$("indBtn"); b.disabled=true; b.textContent="불러오는 중…";
+  $("indStat").textContent="웹 검색으로 10개 지표를 확인하는 중입니다 (30초 안팎)…";
+  try{
+    const [p1,p2]=await Promise.all([fetchIndPart(1),fetchIndPart(2)]);
+    IND={...(IND||{}),...p1,...p2,ts:Date.now()};
+    await store("ind:data",IND);
+    renderInd();
+    $("indStat").textContent="갱신 "+new Date().toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  }catch(e){
+    $("indStat").innerHTML=`<span style="color:var(--warn)">불러오기 실패 (${esc(e.message)}). 잠시 후 다시 시도하세요.</span>`;
+  }
+  b.disabled=false; b.textContent="지표 불러오기";
+});
+
+(async()=>{
+  const saved=await store("ind:data");
+  if(saved&&typeof saved==="object"){ IND=saved;
+    $("indStat").textContent="저장된 값 · "+new Date(saved.ts||Date.now()).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" 기준 — 최신값은 버튼으로 갱신";
+  }
+  renderInd();
+})();
+
+/* ══════════════════ 탭 2 : 뉴스 ══════════════════ */
 const SEED=[
  {c:"KR",t:"07.16",h:"한은, 3년 6개월 만에 기준금리 인상…연 2.75% 만장일치 결정",s:"뉴시스",w:3,u:"https://v.daum.net/v/20260716110353864"},
  {c:"KR",t:"07.20",h:"한은 경제상황 평가…반도체 호조에 올해 성장세 확대 전망",s:"한국은행",w:3,u:"https://www.bok.or.kr/portal/main/main.do"},
@@ -437,7 +646,7 @@ $("btn").addEventListener("click",async()=>{
 });
 renderNews();
 
-/* ══════════════════ 탭 2 : 국민연금 지분공시 (자동 수신) ══════════════════ */
+/* ══════════════════ 탭 3 : 국민연금 지분공시 (자동 수신) ══════════════════ */
 let BASE={};            // {정규화명: {name, rate, date}}
 let FEED_BASE=null;     // 피드가 제공한 기준값 (우선 적용)
 let FILINGS=[];
@@ -460,6 +669,8 @@ function normRec(o){
     rate: numOf(pick(o,["rate","stkrt","보유비율","지분율"])),
     qty:  numOf(pick(o,["qty","stkqy","보유주식수","주식수"])),
     base: numOf(pick(o,["base","base_rate","기준비율"])),
+    prev: numOf(pick(o,["prev","직전비율"])),
+    prevDt: String(pick(o,["prev_date","직전일자"])).trim(),
     verdict: String(pick(o,["verdict","판정"])).trim(),
   };
 }
@@ -739,18 +950,23 @@ function runReport(){
     return `<a class="rrow" href="${url}" target="_blank" rel="noopener noreferrer">
       <span class="nm"><b>${esc(r.f.corp)}${r.f.isNew?'<span class="newtag">NEW</span>':''}</b>
         <span>${esc(fmtDate(r.f.dt))} · ${esc(r.f.rpt||"대량보유상황보고서")}${qty?" · "+qty:""}</span></span>
-      <span class="bars">기준 <b>${from}</b> → 현재 <b>${to}</b></span>
+      <span class="bars">기준 <b>${from}</b> → 현재 <b>${to}</b>${
+        r.f.prev!==null&&r.f.prev!==undefined
+        ?`<span class="prevline">직전 ${r.f.prev.toFixed(2)}% (${esc(fmtDate(r.f.prevDt))}) <b class="${(r.cur??0)>r.f.prev?"d-up":((r.cur??0)<r.f.prev?"d-dn":"")}">${(()=>{const d=(bp(r.cur??0)-bp(r.f.prev))/100;return (d>0?"+":"")+d.toFixed(2);})()}%p</b></span>`
+        :`<span class="prevline flat">직전 공시 없음</span>`}</span>
       <span class="delta ${dcls}">${main}<span class="sub">${sub}</span></span>
       <span class="verdict ${r.cls}">${r.v}</span></a>`;
   }).join("");
 
   LAST_TXT="국민연금 대량보유 변동 리포트 · "+new Date().toLocaleDateString("ko-KR")+
     "\n측정 "+(t.metric==="abs"?"절대(%p)":"상대(%)")+" · "+t.label+
-    "\n종목\t판정\t기준\t현재\t절대(%p)\t상대(%)\t보유주식수\t접수일\n"+
+    "\n종목\t판정\t기준\t현재\t절대(%p)\t상대(%)\t직전\t직전일\t직전대비(%p)\t보유주식수\t접수일\n"+
     rows.map(r=>[r.f.corp, r.v,
       r.b?r.b.rate.toFixed(2):"", r.cur===null?"":r.cur.toFixed(2),
       r.m.dBp===null?"":(r.m.dBp/100).toFixed(2),
       r.m.rBp===null?"":(r.m.rBp/100).toFixed(2),
+      r.f.prev??"", fmtDate(r.f.prevDt||""),
+      (r.f.prev!==null&&r.f.prev!==undefined&&r.cur!==null)?((bp(r.cur)-bp(r.f.prev))/100).toFixed(2):"",
       r.f.qty??"", fmtDate(r.f.dt)].join("\t")).join("\n");
 }
 $("metric").addEventListener("change",()=>{
