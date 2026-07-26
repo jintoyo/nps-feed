@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-07-27T06:29:25+09:00",
+ "generated_at": "2026-07-27T07:02:43+09:00",
  "period": {
   "from": "20260612",
   "to": "20260726"
@@ -7,11 +7,132 @@
  "threshold": 0.1,
  "baseline_label": "2026 1Q",
  "baseline": {
-  "삼성전자": 7.28,
-  "SK하이닉스": 8.11,
-  "현대차": 7.54,
-  "NAVER": 8.02,
-  "KB금융": 7.86
+  "BNK금융지주": 7.57,
+  "CJ제일제당": 8.14,
+  "DB하이텍": 8.42,
+  "DL이앤씨": 11.2,
+  "ESR켄달스퀘어리츠": 4.8,
+  "GS건설": 7.82,
+  "GS리테일": 9.47,
+  "HD현대마린엔진": 8.26,
+  "HD현대에너지솔루션": 5.31,
+  "HK이노엔": 4.06,
+  "HL만도": 10.95,
+  "HL홀딩스": 7.39,
+  "IPARK현대산업개발": 10.4,
+  "KB금융": 9.33,
+  "LG": 6.29,
+  "LG씨엔에스": 6.09,
+  "LG이노텍": 10.54,
+  "LX세미콘": 4.06,
+  "NAVER": 8.22,
+  "NC": 10.25,
+  "NHN": 9.62,
+  "NH투자증권": 7.94,
+  "OCI": 4.95,
+  "POSCO홀딩스": 8.3,
+  "RFHIC": 3.99,
+  "RF머트리얼즈": 3.68,
+  "SKC": 6.14,
+  "SK오션플랜트": 6.69,
+  "SK이터닉스": 5.11,
+  "SK케미칼": 6.51,
+  "SNT에너지": 4.08,
+  "STX엔진": 5.49,
+  "국도화학": 7.08,
+  "글로벌텍스프리": 6.61,
+  "금호석유화학": 9.74,
+  "녹십자": 6.68,
+  "달바글로벌": 9.58,
+  "대상": 10.67,
+  "대주전자재료": 7.67,
+  "대한유화": 10.67,
+  "대한항공": 8.1,
+  "더블유게임즈": 8.22,
+  "덕산네오룩스": 8.01,
+  "덕산하이메탈": 5.0,
+  "덴티움": 4.59,
+  "동국제강": 6.13,
+  "동아에스티": 4.78,
+  "동원산업": 5.01,
+  "두산밥캣": 6.32,
+  "롯데관광개발": 10.47,
+  "롯데쇼핑": 12.37,
+  "롯데에너지머티리얼즈": 7.02,
+  "미래에셋증권": 7.23,
+  "브이엠": 8.05,
+  "비나텍": 5.12,
+  "비에이치": 13.32,
+  "산일전기": 8.29,
+  "삼성E&A": 8.34,
+  "삼성SDI": 7.97,
+  "삼성전기": 9.87,
+  "삼아알미늄": 7.29,
+  "삼화전기": 4.06,
+  "삼화콘덴서공업": 6.52,
+  "세방전지": 5.35,
+  "세아제강": 5.11,
+  "세아제강지주": 5.86,
+  "솔브레인": 4.0,
+  "심텍": 6.09,
+  "씨에스윈드": 9.92,
+  "씨엠티엑스": 3.87,
+  "아모텍": 4.19,
+  "알지노믹스": 3.96,
+  "에스앤에스텍": 3.95,
+  "에스엘": 8.28,
+  "에스티아이": 6.24,
+  "에코프로머티": 5.08,
+  "엘앤에프": 8.63,
+  "엠로": 4.4,
+  "엠앤씨솔루션": 4.13,
+  "영원무역홀딩스": 6.02,
+  "와이지엔터테인먼트": 4.0,
+  "원익QnC": 6.47,
+  "유니드": 8.08,
+  "율촌화학": 4.99,
+  "이노션": 6.0,
+  "이수스페셜티케미컬": 5.05,
+  "인텍플러스": 6.09,
+  "일진전기": 7.67,
+  "제이에스링크": 5.05,
+  "종근당": 6.34,
+  "진성티이씨": 9.46,
+  "카카오": 5.39,
+  "케이뱅크": 5.22,
+  "케이씨씨": 10.14,
+  "코나아이": 6.16,
+  "코리아써키트": 9.67,
+  "코스맥스": 12.85,
+  "코스메카코리아": 12.98,
+  "코오롱인더": 10.92,
+  "태광": 6.57,
+  "파인엠텍": 3.82,
+  "포스코DX": 5.01,
+  "풍산": 7.18,
+  "피에스케이": 7.12,
+  "하나투어": 4.71,
+  "한국카본": 9.48,
+  "한국콜마": 12.68,
+  "한미글로벌": 7.21,
+  "한샘": 4.08,
+  "한섬": 9.33,
+  "한세실업": 4.76,
+  "한솔아이원스": 3.96,
+  "한솔제지": 5.08,
+  "한솔케미칼": 11.89,
+  "한스바이오메드": 6.18,
+  "한올바이오파마": 10.56,
+  "한화오션": 6.66,
+  "해성디에스": 5.94,
+  "현대건설": 10.22,
+  "현대위아": 7.31,
+  "현대제철": 8.84,
+  "현대지에프홀딩스": 5.0,
+  "현대해상": 9.42,
+  "호텔신라": 8.03,
+  "효성중공업": 10.13,
+  "후성": 5.09
  },
  "count": 126,
  "filings": [
@@ -23,9 +144,9 @@
    "filer": "국민연금공단",
    "rate": 3.96,
    "qty": 552380.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.96,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000599"
   },
   {
@@ -36,9 +157,9 @@
    "filer": "국민연금공단",
    "rate": 6.13,
    "qty": 3039142.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.13,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000597"
   },
   {
@@ -49,9 +170,9 @@
    "filer": "국민연금공단",
    "rate": 3.82,
    "qty": 1595345.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.82,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000595"
   },
   {
@@ -62,9 +183,9 @@
    "filer": "국민연금공단",
    "rate": 3.87,
    "qty": 370014.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.87,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000590"
   },
   {
@@ -75,9 +196,9 @@
    "filer": "국민연금공단",
    "rate": 4.0,
    "qty": 311282.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.0,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000584"
   },
   {
@@ -88,9 +209,9 @@
    "filer": "국민연금공단",
    "rate": 3.68,
    "qty": 313381.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.68,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000577"
   },
   {
@@ -101,9 +222,9 @@
    "filer": "국민연금공단",
    "rate": 7.12,
    "qty": 2062489.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.12,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000574"
   },
   {
@@ -114,9 +235,9 @@
    "filer": "국민연금공단",
    "rate": 12.98,
    "qty": 1385741.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 12.98,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000570"
   },
   {
@@ -127,9 +248,9 @@
    "filer": "국민연금공단",
    "rate": 3.99,
    "qty": 1059963.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.99,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000565"
   },
   {
@@ -140,9 +261,9 @@
    "filer": "국민연금공단",
    "rate": 6.0,
    "qty": 2398807.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.0,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000564"
   },
   {
@@ -153,9 +274,9 @@
    "filer": "국민연금공단",
    "rate": 8.01,
    "qty": 1989642.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.01,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000559"
   },
   {
@@ -166,9 +287,9 @@
    "filer": "국민연금공단",
    "rate": 4.06,
    "qty": 1151573.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.06,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000557"
   },
   {
@@ -179,9 +300,9 @@
    "filer": "국민연금공단",
    "rate": 5.94,
    "qty": 1010297.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.94,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000553"
   },
   {
@@ -192,9 +313,9 @@
    "filer": "국민연금공단",
    "rate": 4.78,
    "qty": 464531.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.78,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000550"
   },
   {
@@ -205,9 +326,9 @@
    "filer": "국민연금공단",
    "rate": 5.12,
    "qty": 367296.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.12,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000544"
   },
   {
@@ -218,9 +339,9 @@
    "filer": "국민연금공단",
    "rate": 4.0,
    "qty": 747077.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.0,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000541"
   },
   {
@@ -231,9 +352,9 @@
    "filer": "국민연금공단",
    "rate": 3.96,
    "qty": 1113781.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.96,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000537"
   },
   {
@@ -244,9 +365,9 @@
    "filer": "국민연금공단",
    "rate": 4.76,
    "qty": 1903897.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.76,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000533"
   },
   {
@@ -257,9 +378,9 @@
    "filer": "국민연금공단",
    "rate": 3.95,
    "qty": 841872.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 3.95,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000530"
   },
   {
@@ -270,9 +391,9 @@
    "filer": "국민연금공단",
    "rate": 4.08,
    "qty": 844560.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.08,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000510"
   },
   {
@@ -283,9 +404,9 @@
    "filer": "국민연금공단",
    "rate": 13.32,
    "qty": 4491490.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 13.32,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000502"
   },
   {
@@ -296,9 +417,9 @@
    "filer": "국민연금공단",
    "rate": 8.05,
    "qty": 2120278.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.05,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000496"
   },
   {
@@ -309,9 +430,9 @@
    "filer": "국민연금공단",
    "rate": 7.67,
    "qty": 1203206.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.67,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000492"
   },
   {
@@ -322,9 +443,9 @@
    "filer": "국민연금공단",
    "rate": 6.47,
    "qty": 1701101.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.47,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000483"
   },
   {
@@ -335,9 +456,9 @@
    "filer": "국민연금공단",
    "rate": 7.39,
    "qty": 670561.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.39,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000480"
   },
   {
@@ -348,9 +469,9 @@
    "filer": "국민연금공단",
    "rate": 4.4,
    "qty": 543549.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.4,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000476"
   },
   {
@@ -361,9 +482,9 @@
    "filer": "국민연금공단",
    "rate": 7.21,
    "qty": 790284.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.21,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000472"
   },
   {
@@ -374,9 +495,9 @@
    "filer": "국민연금공단",
    "rate": 4.19,
    "qty": 612225.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.19,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000466"
   },
   {
@@ -387,9 +508,9 @@
    "filer": "국민연금공단",
    "rate": 6.16,
    "qty": 897137.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.16,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000461"
   },
   {
@@ -400,9 +521,9 @@
    "filer": "국민연금공단",
    "rate": 6.24,
    "qty": 967092.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.24,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000458"
   },
   {
@@ -413,9 +534,9 @@
    "filer": "국민연금공단",
    "rate": 9.46,
    "qty": 2085049.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.46,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000456"
   },
   {
@@ -426,9 +547,9 @@
    "filer": "국민연금공단",
    "rate": 6.57,
    "qty": 1698486.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.57,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000451"
   },
   {
@@ -439,9 +560,9 @@
    "filer": "국민연금공단",
    "rate": 9.33,
    "qty": 2004050.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.33,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000446"
   },
   {
@@ -452,9 +573,9 @@
    "filer": "국민연금공단",
    "rate": 8.08,
    "qty": 546566.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.08,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000442"
   },
   {
@@ -465,9 +586,9 @@
    "filer": "국민연금공단",
    "rate": 4.06,
    "qty": 268495.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.06,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000434"
   },
   {
@@ -478,9 +599,9 @@
    "filer": "국민연금공단",
    "rate": 7.08,
    "qty": 655613.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.08,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000430"
   },
   {
@@ -491,9 +612,9 @@
    "filer": "국민연금공단",
    "rate": 10.67,
    "qty": 693636.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.67,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000424"
   },
   {
@@ -504,9 +625,9 @@
    "filer": "국민연금공단",
    "rate": 6.52,
    "qty": 677979.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.52,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000417"
   },
   {
@@ -517,9 +638,9 @@
    "filer": "국민연금공단",
    "rate": 5.86,
    "qty": 242900.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.86,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000415"
   },
   {
@@ -530,9 +651,9 @@
    "filer": "국민연금공단",
    "rate": 4.59,
    "qty": 395510.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.59,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000402"
   },
   {
@@ -543,9 +664,9 @@
    "filer": "국민연금공단",
    "rate": 4.13,
    "qty": 377659.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.13,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000395"
   },
   {
@@ -556,9 +677,9 @@
    "filer": "국민연금공단",
    "rate": 4.71,
    "qty": 730003.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.71,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000385"
   },
   {
@@ -569,9 +690,9 @@
    "filer": "국민연금공단",
    "rate": 5.49,
    "qty": 2203172.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.49,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000383"
   },
   {
@@ -582,9 +703,9 @@
    "filer": "국민연금공단",
    "rate": 4.06,
    "qty": 660243.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.06,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000380"
   },
   {
@@ -595,9 +716,9 @@
    "filer": "국민연금공단",
    "rate": 4.99,
    "qty": 1237525.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.99,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000379"
   },
   {
@@ -608,9 +729,9 @@
    "filer": "국민연금공단",
    "rate": 9.67,
    "qty": 2320112.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.67,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000377"
   },
   {
@@ -621,9 +742,9 @@
    "filer": "국민연금공단",
    "rate": 10.4,
    "qty": 6856237.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.4,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000374"
   },
   {
@@ -634,9 +755,9 @@
    "filer": "국민연금공단",
    "rate": 4.08,
    "qty": 961309.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.08,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000373"
   },
   {
@@ -647,9 +768,9 @@
    "filer": "국민연금공단",
    "rate": 8.63,
    "qty": 3502949.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.63,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000371"
   },
   {
@@ -660,9 +781,9 @@
    "filer": "국민연금공단",
    "rate": 7.82,
    "qty": 6693347.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.82,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000369"
   },
   {
@@ -673,9 +794,9 @@
    "filer": "국민연금공단",
    "rate": 7.18,
    "qty": 2011862.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.18,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000368"
   },
   {
@@ -686,9 +807,9 @@
    "filer": "국민연금공단",
    "rate": 10.47,
    "qty": 8330858.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.47,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000366"
   },
   {
@@ -699,9 +820,9 @@
    "filer": "국민연금공단",
    "rate": 4.8,
    "qty": 11803639.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.8,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000364"
   },
   {
@@ -712,9 +833,9 @@
    "filer": "국민연금공단",
    "rate": 5.35,
    "qty": 741539.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.35,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000360"
   },
   {
@@ -725,9 +846,9 @@
    "filer": "국민연금공단",
    "rate": 6.68,
    "qty": 780084.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.68,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000359"
   },
   {
@@ -738,9 +859,9 @@
    "filer": "국민연금공단",
    "rate": 7.31,
    "qty": 1988108.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.31,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000358"
   },
   {
@@ -751,9 +872,9 @@
    "filer": "국민연금공단",
    "rate": 6.34,
    "qty": 875747.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.34,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000355"
   },
   {
@@ -764,9 +885,9 @@
    "filer": "국민연금공단",
    "rate": 6.51,
    "qty": 1126107.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.51,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000354"
   },
   {
@@ -777,9 +898,9 @@
    "filer": "국민연금공단",
    "rate": 8.28,
    "qty": 3846168.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.28,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000351"
   },
   {
@@ -790,9 +911,9 @@
    "filer": "국민연금공단",
    "rate": 9.48,
    "qty": 4901021.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.48,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000347"
   },
   {
@@ -803,9 +924,9 @@
    "filer": "국민연금공단",
    "rate": 10.67,
    "qty": 3698475.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.67,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000345"
   },
   {
@@ -816,9 +937,9 @@
    "filer": "국민연금공단",
    "rate": 6.14,
    "qty": 3045979.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.14,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000342"
   },
   {
@@ -829,9 +950,9 @@
    "filer": "국민연금공단",
    "rate": 6.09,
    "qty": 5901726.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.09,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000341"
   },
   {
@@ -842,9 +963,9 @@
    "filer": "국민연금공단",
    "rate": 5.39,
    "qty": 23873979.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.39,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000328"
   },
   {
@@ -855,9 +976,9 @@
    "filer": "국민연금공단",
    "rate": 6.29,
    "qty": 9704689.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.29,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000325"
   },
   {
@@ -868,9 +989,9 @@
    "filer": "국민연금공단",
    "rate": 10.54,
    "qty": 2493971.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.54,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000315"
   },
   {
@@ -881,9 +1002,9 @@
    "filer": "국민연금공단",
    "rate": 10.95,
    "qty": 5139925.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.95,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000313"
   },
   {
@@ -894,9 +1015,9 @@
    "filer": "국민연금공단",
    "rate": 5.01,
    "qty": 7620930.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.01,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000311"
   },
   {
@@ -907,9 +1028,9 @@
    "filer": "국민연금공단",
    "rate": 9.58,
    "qty": 1189390.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.58,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000308"
   },
   {
@@ -920,9 +1041,9 @@
    "filer": "국민연금공단",
    "rate": 7.02,
    "qty": 3675002.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.02,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000305"
   },
   {
@@ -933,9 +1054,9 @@
    "filer": "국민연금공단",
    "rate": 9.47,
    "qty": 7914892.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.47,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000303"
   },
   {
@@ -946,9 +1067,9 @@
    "filer": "국민연금공단",
    "rate": 6.32,
    "qty": 6060455.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.32,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000300"
   },
   {
@@ -959,9 +1080,9 @@
    "filer": "국민연금공단",
    "rate": 6.69,
    "qty": 4181453.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.69,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000295"
   },
   {
@@ -972,9 +1093,9 @@
    "filer": "국민연금공단",
    "rate": 7.97,
    "qty": 6420490.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.97,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000293"
   },
   {
@@ -985,9 +1106,9 @@
    "filer": "국민연금공단",
    "rate": 12.85,
    "qty": 1458173.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 12.85,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000290"
   },
   {
@@ -998,9 +1119,9 @@
    "filer": "국민연금공단",
    "rate": 7.57,
    "qty": 23477020.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.57,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000287"
   },
   {
@@ -1011,9 +1132,9 @@
    "filer": "국민연금공단",
    "rate": 11.2,
    "qty": 4334484.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 11.2,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000284"
   },
   {
@@ -1024,9 +1145,9 @@
    "filer": "국민연금공단",
    "rate": 8.03,
    "qty": 3213595.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.03,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000279"
   },
   {
@@ -1037,9 +1158,9 @@
    "filer": "국민연금공단",
    "rate": 9.92,
    "qty": 4185226.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.92,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000276"
   },
   {
@@ -1050,9 +1171,9 @@
    "filer": "국민연금공단",
    "rate": 8.42,
    "qty": 3663665.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.42,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000274"
   },
   {
@@ -1063,9 +1184,9 @@
    "filer": "국민연금공단",
    "rate": 10.92,
    "qty": 3268866.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.92,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000273"
   },
   {
@@ -1076,9 +1197,9 @@
    "filer": "국민연금공단",
    "rate": 8.29,
    "qty": 2536651.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.29,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000271"
   },
   {
@@ -1089,9 +1210,9 @@
    "filer": "국민연금공단",
    "rate": 9.87,
    "qty": 7375584.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.87,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000266"
   },
   {
@@ -1102,9 +1223,9 @@
    "filer": "국민연금공단",
    "rate": 8.22,
    "qty": 1739499.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.22,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000265"
   },
   {
@@ -1115,9 +1236,9 @@
    "filer": "국민연금공단",
    "rate": 8.22,
    "qty": 12890916.0,
-   "base": 8.02,
-   "delta": 0.2,
-   "verdict": "매수",
+   "base": 8.22,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000252"
   },
   {
@@ -1128,9 +1249,9 @@
    "filer": "국민연금공단",
    "rate": 8.26,
    "qty": 2802291.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.26,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000251"
   },
   {
@@ -1141,9 +1262,9 @@
    "filer": "국민연금공단",
    "rate": 8.1,
    "qty": 29815551.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.1,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000250"
   },
   {
@@ -1154,9 +1275,9 @@
    "filer": "국민연금공단",
    "rate": 10.13,
    "qty": 944514.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.13,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000248"
   },
   {
@@ -1167,9 +1288,9 @@
    "filer": "국민연금공단",
    "rate": 9.42,
    "qty": 8031234.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.42,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000246"
   },
   {
@@ -1180,9 +1301,9 @@
    "filer": "국민연금공단",
    "rate": 10.25,
    "qty": 2208456.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.25,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000243"
   },
   {
@@ -1193,9 +1314,9 @@
    "filer": "국민연금공단",
    "rate": 7.23,
    "qty": 40436529.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.23,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000242"
   },
   {
@@ -1206,9 +1327,9 @@
    "filer": "국민연금공단",
    "rate": 9.74,
    "qty": 2450739.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.74,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000240"
   },
   {
@@ -1219,9 +1340,9 @@
    "filer": "국민연금공단",
    "rate": 8.34,
    "qty": 16349381.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.34,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000238"
   },
   {
@@ -1232,9 +1353,9 @@
    "filer": "국민연금공단",
    "rate": 11.89,
    "qty": 1351428.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 11.89,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000235"
   },
   {
@@ -1245,9 +1366,9 @@
    "filer": "국민연금공단",
    "rate": 7.67,
    "qty": 3658305.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.67,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000232"
   },
   {
@@ -1258,9 +1379,9 @@
    "filer": "국민연금공단",
    "rate": 10.14,
    "qty": 900770.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.14,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000231"
   },
   {
@@ -1271,9 +1392,9 @@
    "filer": "국민연금공단",
    "rate": 9.62,
    "qty": 3151469.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 9.62,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000226"
   },
   {
@@ -1284,9 +1405,9 @@
    "filer": "국민연금공단",
    "rate": 12.37,
    "qty": 3499889.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 12.37,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000223"
   },
   {
@@ -1297,9 +1418,9 @@
    "filer": "국민연금공단",
    "rate": 10.56,
    "qty": 5518019.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.56,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000222"
   },
   {
@@ -1310,9 +1431,9 @@
    "filer": "국민연금공단",
    "rate": 12.68,
    "qty": 2992257.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 12.68,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000220"
   },
   {
@@ -1323,9 +1444,9 @@
    "filer": "국민연금공단",
    "rate": 10.22,
    "qty": 11375422.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 10.22,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000218"
   },
   {
@@ -1336,9 +1457,9 @@
    "filer": "국민연금공단",
    "rate": 5.11,
    "qty": 1740358.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.11,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000185"
   },
   {
@@ -1349,9 +1470,9 @@
    "filer": "국민연금공단",
    "rate": 5.05,
    "qty": 1527520.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.05,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000184"
   },
   {
@@ -1362,9 +1483,9 @@
    "filer": "국민연금공단",
    "rate": 4.95,
    "qty": 442834.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 4.95,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000183"
   },
   {
@@ -1375,9 +1496,9 @@
    "filer": "국민연금공단",
    "rate": 5.08,
    "qty": 3585692.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.08,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000182"
   },
   {
@@ -1388,9 +1509,9 @@
    "filer": "국민연금공단",
    "rate": 5.31,
    "qty": 594799.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.31,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000181"
   },
   {
@@ -1401,9 +1522,9 @@
    "filer": "국민연금공단",
    "rate": 5.11,
    "qty": 144947.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.11,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000180"
   },
   {
@@ -1414,9 +1535,9 @@
    "filer": "국민연금공단",
    "rate": 5.22,
    "qty": 21165369.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.22,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000179"
   },
   {
@@ -1427,9 +1548,9 @@
    "filer": "국민연금공단",
    "rate": 6.09,
    "qty": 2280535.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.09,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000178"
   },
   {
@@ -1440,9 +1561,9 @@
    "filer": "국민연금공단",
    "rate": 5.08,
    "qty": 1207993.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.08,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000177"
   },
   {
@@ -1453,9 +1574,9 @@
    "filer": "국민연금공단",
    "rate": 6.61,
    "qty": 4647418.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.61,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000176"
   },
   {
@@ -1466,9 +1587,9 @@
    "filer": "국민연금공단",
    "rate": 5.05,
    "qty": 1755928.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.05,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000175"
   },
   {
@@ -1479,9 +1600,9 @@
    "filer": "국민연금공단",
    "rate": 5.09,
    "qty": 5460649.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.09,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000174"
   },
   {
@@ -1492,9 +1613,9 @@
    "filer": "국민연금공단",
    "rate": 5.0,
    "qty": 2273536.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.0,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000172"
   },
   {
@@ -1505,9 +1626,9 @@
    "filer": "국민연금공단",
    "rate": 6.09,
    "qty": 782970.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.09,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000171"
   },
   {
@@ -1518,9 +1639,9 @@
    "filer": "국민연금공단",
    "rate": 6.18,
    "qty": 881697.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.18,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000167"
   },
   {
@@ -1531,9 +1652,9 @@
    "filer": "국민연금공단",
    "rate": 6.02,
    "qty": 780120.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.02,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000166"
   },
   {
@@ -1544,9 +1665,9 @@
    "filer": "국민연금공단",
    "rate": 7.29,
    "qty": 1102163.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.29,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000163"
   },
   {
@@ -1557,9 +1678,9 @@
    "filer": "국민연금공단",
    "rate": 5.01,
    "qty": 2213074.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.01,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000162"
   },
   {
@@ -1570,9 +1691,9 @@
    "filer": "국민연금공단",
    "rate": 5.0,
    "qty": 7800379.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 5.0,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000161"
   },
   {
@@ -1583,9 +1704,9 @@
    "filer": "국민연금공단",
    "rate": 8.84,
    "qty": 11794553.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.84,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260701000151"
   },
   {
@@ -1596,9 +1717,9 @@
    "filer": "국민연금공단",
    "rate": 8.14,
    "qty": 1224703.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.14,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260623000341"
   },
   {
@@ -1609,9 +1730,9 @@
    "filer": "국민연금공단",
    "rate": 6.66,
    "qty": 20413224.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 6.66,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260623000338"
   },
   {
@@ -1622,9 +1743,9 @@
    "filer": "국민연금공단",
    "rate": 8.3,
    "qty": 6576661.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 8.3,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260623000336"
   },
   {
@@ -1635,9 +1756,9 @@
    "filer": "국민연금공단",
    "rate": 9.33,
    "qty": 33101147.0,
-   "base": 7.86,
-   "delta": 1.47,
-   "verdict": "매수",
+   "base": 9.33,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260617000314"
   },
   {
@@ -1648,9 +1769,9 @@
    "filer": "국민연금공단",
    "rate": 7.94,
    "qty": 28304200.0,
-   "base": null,
-   "delta": null,
-   "verdict": "신규",
+   "base": 7.94,
+   "delta": 0.0,
+   "verdict": "유지",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260617000311"
   }
  ]
