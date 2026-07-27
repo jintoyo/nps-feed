@@ -136,7 +136,10 @@ def auto_amount_field(rows: list[dict]) -> str | None:
     keys = set()
     for r in rows[:5]:
         keys |= set(r.keys())
-    cand = [k for k in keys if _re.search(r"(pbmn|amt|tr_pbmn|ntby)", k, _re.I)]
+    # 거래대금(pbmn) 필드만 후보로 — 수량/거래량(qty, vol)은 제외해야
+    # "0"이 아닌 진짜 금액을 정확히 잡는다. 실제 KIS 응답 확인 결과
+    # frgn_ntby_tr_pbmn(외국인) · orgn_ntby_tr_pbmn(기관) 형태로 온다.
+    cand = [k for k in keys if _re.search(r"pbmn", k, _re.I) and not _re.search(r"(qty|vol)", k, _re.I)]
     best, best_score = None, -1
     for k in cand:
         vals = []
@@ -163,27 +166,37 @@ def pick_str(row: dict, *names):
     return None
 
 
-def normalize(rows: list[dict]) -> list[dict]:
-    """행 하나를 {n(종목명), v(순매매금액, 억원)} 로 정규화."""
+def normalize(rows: list[dict], investor: str) -> list[dict]:
+    """
+    행 하나를 {n(종목명), v(순매매금액, 억원)} 로 정규화.
+    investor: "foreign"(외국인) 또는 "inst"(기관) — 실제 KIS 응답에서 확인된
+    정확한 금액 필드명을 우선 사용하고, 응답 구조가 바뀌는 경우에 대비해
+    자동감지(거래대금 필드만)를 보조 수단으로 둔다.
+    """
+    primary = "frgn_ntby_tr_pbmn" if investor == "foreign" else "orgn_ntby_tr_pbmn"
     out = []
-    amt_key = auto_amount_field(rows)
+    amt_key = primary if rows and primary in rows[0] else auto_amount_field(rows)
+    if amt_key and rows:
+        print(f"    - {investor}: 사용한 금액 필드 = '{amt_key}'"
+              + (" (확인된 필드)" if amt_key == primary else " (자동감지 — 확인된 필드 없어 보조 사용)"))
     for r in rows:
         name = pick_str(r, "hts_kor_isnm", "isnm", "name")
         amt = pick_num(r, amt_key) if amt_key else None
-        if amt is None:
-            amt = pick_num(r, "ntby_tr_pbmn", "ntby_trad_pbmn", "frgn_ntby_tr_pbmn",
-                            "ntby_qty_pbmn", "ntby_prsm_amt")
         if name is None or amt is None:
             continue
-        out.append({"n": name, "v": round(amt / 1e8, 1)})  # 원 → 억원 추정
+        out.append({"n": name, "v": round(amt / 100, 1)})  # 백만원 → 억원 (가격×수량 대조로 확인)
     return out[:TOP_N]
 
 
-def collect_investor(token: str, etc_cls: str) -> dict:
+def collect_investor(token: str, etc_cls: str, investor: str) -> dict:
     buy_rows = call_ranking(token, mkt_div="V", rank_sort="0", etc_cls=etc_cls)
+    if not buy_rows:
+        print(f"    ! {investor} 순매수 목록이 비어서 옴 (etc_cls={etc_cls})", file=sys.stderr)
     time.sleep(0.3)
     sell_rows = call_ranking(token, mkt_div="V", rank_sort="1", etc_cls=etc_cls)
-    return {"buy": normalize(buy_rows), "sell": normalize(sell_rows)}
+    if not sell_rows:
+        print(f"    ! {investor} 순매도 목록이 비어서 옴 (etc_cls={etc_cls})", file=sys.stderr)
+    return {"buy": normalize(buy_rows, investor), "sell": normalize(sell_rows, investor)}
 
 
 def main() -> int:
@@ -201,7 +214,7 @@ def main() -> int:
     out: dict = {}
     for key, etc_cls in (("foreign", "0"), ("inst", "1")):
         try:
-            d = collect_investor(token, etc_cls)
+            d = collect_investor(token, etc_cls, key)
         except Exception as e:  # noqa: BLE001
             print(f"  ! {key} 수집 실패: {type(e).__name__}: {e}", file=sys.stderr)
             d = {"buy": [], "sell": []}
