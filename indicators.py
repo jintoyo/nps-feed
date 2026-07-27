@@ -105,9 +105,12 @@ def main() -> int:
     out: dict = {}
 
     # ── 야후 시세 계열 ────────────────────────────────
-    tnx_c, tnx_p = yahoo("^TNX")            # 10년물 금리 ×10
-    out["us10y"] = {"v": rnd(tnx_c / 10 if tnx_c else None),
-                    "chg": rnd((tnx_c - tnx_p) / 10 if tnx_c and tnx_p else None)}
+    tnx_c, tnx_p = yahoo("^TNX")
+    # 야후 ^TNX 는 시기에 따라 금리×10(예: 42.8) 또는 금리 그대로(예: 4.28)로 온다.
+    # 값의 크기로 단위를 판별해 어느 쪽이든 % 금리로 정규화한다.
+    tnx_k = 0.1 if (tnx_c or 0) > 20 else 1.0
+    out["us10y"] = {"v": rnd(tnx_c * tnx_k if tnx_c else None),
+                    "chg": rnd((tnx_c - tnx_p) * tnx_k if tnx_c and tnx_p else None)}
 
     dxy_c, dxy_p = yahoo("DX-Y.NYB")
     out["dxy"] = {"v": rnd(dxy_c),
