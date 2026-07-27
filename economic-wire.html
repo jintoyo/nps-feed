@@ -160,6 +160,12 @@
   @media (max-width:640px){ .flowcols{grid-template-columns:1fr} .flist{max-height:250px} }
   .readout{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
   .readout b{color:var(--ink);font-weight:600}
+  .guide{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-top:10px;
+         padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:3px}
+  .guide .gtitle{font-size:12px;font-weight:700;margin-bottom:4px}
+  .guide .gset{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px}
+  .guide p{font-size:11.5px;color:var(--muted);line-height:1.6;margin:0;word-break:keep-all}
+  @media (max-width:640px){ .guide{grid-template-columns:1fr;gap:12px 0} }
   .scale{margin-top:14px;max-width:560px}
   .band{display:flex;border-radius:2px;overflow:hidden}
   .seg{flex:1;text-align:center;font-family:var(--mono);font-size:10px;
@@ -340,7 +346,9 @@
       </div>
     </div>
 
-    <div class="row" style="margin-top:16px">
+    <input type="search" id="stockQ" class="nq" style="margin-top:14px"
+           placeholder="종목명 검색 — 예: 삼성전자, 하이닉스 (쉼표로 여러 개)">
+    <div class="row" style="margin-top:10px">
       <div class="tierbox">
         <select id="metric" title="지분율이 몇 %p 움직였는지(변화폭) 볼지, 원래 보유량 대비 몇 %인지(보유대비) 볼지">
           <option value="abs" selected>변화폭 %p</option>
@@ -356,7 +364,24 @@
       <label class="toggle" style="font-size:11.5px;margin-left:6px">
         <input type="checkbox" id="allRows"> 이전 공시도 함께 보기</label>
       <span class="spacer"></span>
+      <button class="btn ghost" id="guideBtn" aria-expanded="false">설정 가이드</button>
       <button class="btn ghost" id="copyRep">리포트 복사</button>
+    </div>
+    <div class="guide" id="guideBox" hidden>
+      <div class="gcol">
+        <div class="gtitle">신규 매수 진입을 보려면</div>
+        <div class="gset"><b>보유대비 %</b> · <b>아주 예민하게</b> (±7.51% / ±20%)</div>
+        <p>보유 비중이 아직 작은 종목(3~5%대)은 변화폭 %p로 보면 별거 아닌 움직임 같지만,
+        실제로는 보유량 자체를 20~30%씩 늘리는 공격적 매집일 수 있습니다. 낮은 보유 종목의
+        작은 %p 변화도 놓치지 않도록 민감도를 가장 높게 둡니다.</p>
+      </div>
+      <div class="gcol">
+        <div class="gtitle">보유 종목 매도(이탈)를 보려면</div>
+        <div class="gset"><b>변화폭 %p</b> · <b>조금 예민하게</b> (±1.00%p / ±2.00%p, 법정 기준)</div>
+        <p>이미 크게 들고 있는 종목(10%대 이상)의 이탈은 보유대비 %로 보면 작아 보이지만,
+        절대 물량으로는 시장에 큰 매도 압력입니다. 법정 공시 의무 임계치(1%p)와 일치하는
+        절대 %p 기준이라야 이탈 신호를 가장 빠르게 잡습니다.</p>
+      </div>
     </div>
 
     <div class="scale" id="scale">
@@ -675,6 +700,7 @@ const COUNTRIES=[
 ];
 var newsFilter="";
 let DATA=SEED.slice(), filter="ALL", onlyHi=false;
+renderNews(); loadNews(true);   // 초기 렌더 + 서버 뉴스 자동 조회 (DATA 초기화 이후에 실행)
 
 function qTokens(){ return newsFilter.split(/[,\s]+/).map(t=>t.trim()).filter(Boolean); }
 function hlight(text,tokens){
@@ -1030,9 +1056,15 @@ function runReport(){
     rep.innerHTML='<div class="empty">피드 주소를 저장하면 이 탭을 열 때마다 자동으로 공시를 받아 판정합니다.<br>'+
       '아직 받은 공시가 없습니다.</div>'; LAST_TXT=""; return;
   }
-  const show=$("allRows").checked?FILINGS:FILINGS.filter(f=>f.isNew);
+  let show=$("allRows").checked?FILINGS:FILINGS.filter(f=>f.isNew);
+  const qtoks=$("stockQ").value.split(/[,\s]+/).map(x=>x.trim()).filter(Boolean);
+  if(qtoks.length){
+    show=show.filter(f=>qtoks.some(q=>f.corp.toLowerCase().includes(q.toLowerCase())));
+  }
   if(!show.length){
-    rep.innerHTML='<div class="empty">새 공시 없음 — 수신한 '+FILINGS.length+'건은 모두 이전에 확인한 접수번호입니다.</div>';
+    rep.innerHTML = qtoks.length
+      ? `<div class="empty">"${esc(qtoks.join(", "))}" 와 일치하는 종목이 없습니다.</div>`
+      : '<div class="empty">새 공시 없음 — 수신한 '+FILINGS.length+'건은 모두 이전에 확인한 접수번호입니다.</div>';
     LAST_TXT=""; return;
   }
   const rows=show.map(f=>{
@@ -1093,6 +1125,11 @@ $("tier").addEventListener("change",()=>{syncTierUI();store("nps:tier",$("tier")
   store("nps:custom",{mild:$("thrMild").value,strong:$("thrStrong").value});
   syncTierUI(); runReport();}));
 $("allRows").addEventListener("change",runReport);
+$("stockQ").addEventListener("input",runReport);
+$("guideBtn").addEventListener("click",()=>{
+  const box=$("guideBox"), open=box.hidden;
+  box.hidden=!open; $("guideBtn").setAttribute("aria-expanded",String(open));
+});
 $("copyRep").addEventListener("click",async()=>{
   const b=$("copyRep");
   if(!LAST_TXT){b.textContent="복사할 내용 없음";setTimeout(()=>b.textContent="리포트 복사",1400);return;}
