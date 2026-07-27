@@ -144,7 +144,7 @@
   @media (max-width:720px){ .indgrid{grid-template-columns:1fr} }
   .flowsec{background:var(--card);border:1px solid var(--rule);border-radius:3px;
            padding:14px 16px;margin-top:14px}
-  #flowWrap+.indgrid{margin-top:14px}
+  .indgrid+#flowWrap{margin-top:14px}
   .flowsec h3{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
   .fempty{font-size:12px;color:var(--muted);padding:14px 2px 4px;line-height:1.6;word-break:keep-all}
   .flowsec h3 small{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:400}
@@ -251,10 +251,12 @@
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="t-ind" aria-selected="true" aria-controls="p-ind">
       <span class="n">01</span>핵심 지표</button>
+    <button class="tab" role="tab" id="t-flow" aria-selected="false" aria-controls="p-flow">
+      <span class="n">02</span>외국인·기관 수급</button>
     <button class="tab" role="tab" id="t-news" aria-selected="false" aria-controls="p-news">
-      <span class="n">02</span>경제 헤드라인</button>
+      <span class="n">03</span>경제 헤드라인</button>
     <button class="tab" role="tab" id="t-nps" aria-selected="false" aria-controls="p-nps">
-      <span class="n">03</span>국민연금 지분공시</button>
+      <span class="n">04</span>국민연금 지분공시</button>
   </div>
 
   <!-- ══════════ 탭 1 : 핵심 지표 ══════════ -->
@@ -264,18 +266,26 @@
       <span class="spacer"></span>
       <button class="btn" id="indBtn">지표 불러오기</button>
     </div>
-    <div id="flowWrap"></div>
     <div class="indgrid" id="indGrid"></div>
     <div class="note">
       값은 수집 서버가 <b>매시간 자동 갱신</b>하며, 이 페이지가 GitHub Pages 에 있으면
       주소 설정 없이 같은 저장소의 데이터를 자동으로 읽습니다. 출처: 야후 파이낸스 공개 시세,
-      CNN 공포&탐욕 지수, WorldGovernmentBonds(한국 CDS), 한국거래소 KRX(외국인·기관 순매매). 탭을 열면 최신본을 자동으로 읽고,
+      CNN 공포&탐욕 지수, WorldGovernmentBonds(한국 CDS). 탭을 열면 최신본을 자동으로 읽고,
       버튼은 즉시 다시 읽기입니다.<br>
       해석 문구는 값에서 자동 계산됩니다 — 방향 참고용이지 매매 지시가 아닙니다.
     </div>
   </section>
 
-  <!-- ══════════ 탭 1 ══════════ -->
+  <!-- ══════════ 탭 2 : 외국인·기관 수급 ══════════ -->
+  <section class="panel" id="p-flow" role="tabpanel" aria-labelledby="t-flow" hidden>
+    <div id="flowWrap" style="margin-top:16px"></div>
+    <div class="note">
+      값은 수집 서버가 매시간 한국투자증권 Open API로 수집합니다(코스피+코스닥, 억원 단위).
+      탭을 열면 최신본을 자동으로 읽습니다.
+    </div>
+  </section>
+
+  <!-- ══════════ 탭 3 ══════════ -->
   <section class="panel" id="p-news" role="tabpanel" aria-labelledby="t-news" hidden>
     <div class="filters">
       <button class="chip" data-f="ALL" aria-pressed="true">ALL</button>
@@ -440,7 +450,7 @@ async function store(k,v){
 }
 
 /* 탭 전환 */
-const TABS=[["t-ind","p-ind"],["t-news","p-news"],["t-nps","p-nps"]];
+const TABS=[["t-ind","p-ind"],["t-flow","p-flow"],["t-news","p-news"],["t-nps","p-nps"]];
 function selectTab(t){
   TABS.forEach(([tt,pp])=>{const on=tt===t;$(tt).setAttribute("aria-selected",String(on));$(pp).hidden=!on;});
   $("btn").style.display = t==="t-news" ? "" : "none";
