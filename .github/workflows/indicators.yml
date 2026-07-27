@@ -26,11 +26,14 @@ jobs:
       - name: 외국인/기관 순매매 수집
         run: python flows.py
 
+      - name: 헤드라인 수집
+        run: python news.py
+
       - name: 변경분만 커밋
         run: |
           git config user.name  "ind-bot"
           git config user.email "ind-bot@users.noreply.github.com"
-          for f in indicators.json flows.json; do
+          for f in indicators.json flows.json news.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --staged --quiet; then
