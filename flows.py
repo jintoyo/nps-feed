@@ -144,6 +144,123 @@ def collect_day(trd_dd: str) -> dict | None:
     return out
 
 
+
+
+# ── 폴백: 네이버 금융 (KRX 가 해외 IP 를 막을 때) ──────────────
+NAVER_BASE = "https://finance.naver.com"
+NAVER_HEADERS = {"User-Agent": HEADERS["User-Agent"],
+                 "Referer": "https://finance.naver.com/sise/",
+                 "Accept-Language": "ko-KR,ko;q=0.9"}
+
+
+def naver_get(path: str) -> str:
+    r = requests.get(NAVER_BASE + path, headers=NAVER_HEADERS, timeout=20)
+    r.raise_for_status()
+    r.encoding = "euc-kr"
+    return r.text
+
+
+def naver_discover() -> dict:
+    """시세 메인에서 외국인/기관 매매 상위 페이지 링크를 찾아낸다."""
+    import re as _re
+    html = naver_get("/sise/")
+    links = _re.findall(r'href="(/sise/[^"]+)"[^>]*>([^<]{2,20})<', html)
+    found = {}
+    for href, text in links:
+        t = text.strip()
+        if "외국인" in t and ("매매" in t or "순매" in t):
+            found.setdefault("foreign", href.replace("&amp;", "&"))
+        if "기관" in t and ("매매" in t or "순매" in t):
+            found.setdefault("inst", href.replace("&amp;", "&"))
+    print(f"  · [네이버] 발견한 링크: {found or '없음'}")
+    return found
+
+
+def naver_parse_tables(html: str) -> list:
+    """페이지의 모든 표를 (헤더, 행들)로 뽑는다. 구조를 로그로 남긴다."""
+    import re as _re
+    out = []
+    for tb in _re.findall(r"<table[^>]*>([\s\S]*?)</table>", html):
+        rows = []
+        for tr in _re.findall(r"<tr[^>]*>([\s\S]*?)</tr>", tb):
+            cells = [_re.sub(r"<[^>]+>", "", c).replace("&nbsp;", " ").strip()
+                     for c in _re.findall(r"<t[hd][^>]*>([\s\S]*?)</t[hd]>", tr)]
+            if any(cells):
+                rows.append(cells)
+        if len(rows) >= 2:
+            out.append(rows)
+    return out
+
+
+def naver_extract(href: str, label: str) -> tuple[list, list]:
+    """한 투자자 페이지에서 (순매수, 순매도) 목록을 뽑는다."""
+    html = naver_get(href)
+    tables = naver_parse_tables(html)
+    buys, sells = [], []
+    seen_amount_tables = 0
+    for rows in tables:
+        header = rows[0]
+        htxt = " ".join(header)
+        # 금액 열 찾기 (단위: 보통 백만원)
+        amt_i = next((i for i, h in enumerate(header) if "금액" in h), None)
+        name_i = next((i for i, h in enumerate(header) if "종목" in h), None)
+        if amt_i is None or name_i is None:
+            continue
+        unit_div = 100.0 if "백만" in htxt else (1e8 if "원" in htxt else 100.0)
+        seen_amount_tables += 1
+        if "매도" in htxt:
+            side = "sell"
+        elif "매수" in htxt:
+            side = "buy"
+        else:
+            # 헤더에 방향이 없으면 등장 순서로: 첫 금액표=순매수, 둘째=순매도
+            side = "buy" if seen_amount_tables == 1 else "sell"
+        recs = []
+        for r in rows[1:]:
+            if len(r) <= max(amt_i, name_i):
+                continue
+            name = r[name_i].strip()
+            try:
+                amt = float(r[amt_i].replace(",", "").replace("+", ""))
+            except ValueError:
+                continue
+            if name and abs(amt) > 0:
+                recs.append({"n": name, "v": round(abs(amt) / unit_div, 1)})
+        if not recs:
+            continue
+        print(f"  · [네이버:{label}] 표 인식: 헤더={header[:5]} → {len(recs)}행, side={side}")
+        if side == "sell":
+            sells.extend({"n": x["n"], "v": -x["v"]} for x in recs)
+        else:
+            buys.extend(recs)
+    # 진단: 아무것도 못 뽑았으면 표 헤더들을 전부 보여준다
+    if not buys and not sells:
+        for rows in tables[:6]:
+            print(f"  · [네이버:{label}] 미인식 표 헤더: {rows[0][:6]}", file=sys.stderr)
+    return buys[:TOP_N], sells[:TOP_N]
+
+
+def collect_naver() -> dict | None:
+    try:
+        found = naver_discover()
+    except Exception as e:  # noqa: BLE001
+        print(f"  ! 네이버 접속 실패: {type(e).__name__}: {e}", file=sys.stderr)
+        return None
+    if not found:
+        return None
+    out = {}
+    for key in ("foreign", "inst"):
+        if key not in found:
+            continue
+        try:
+            buy, sell = naver_extract(found[key], key)
+            if buy or sell:
+                out[key] = {"buy": buy, "sell": sell}
+        except Exception as e:  # noqa: BLE001
+            print(f"  ! 네이버 {key} 파싱 실패: {type(e).__name__}: {e}", file=sys.stderr)
+    return out or None
+
+
 def main() -> int:
     print("외국인/기관 순매매 수집 시작")
     d = datetime.now(KST).date()
@@ -155,10 +272,18 @@ def main() -> int:
         print(f"  · {trd_dd} 시도")
         try:
             day = collect_day(trd_dd)
-        except RuntimeError as e:              # 접속 자체가 안 되는 경우 — 반복 무의미
+        except RuntimeError as e:              # 접속 자체가 안 되는 경우 — 폴백으로
             print(f"  ! {e}", file=sys.stderr)
-            print("  ! GitHub Actions(해외 IP)에서 KRX 가 차단됐을 수 있습니다. "
-                  "이 로그를 그대로 공유해 주세요.")
+            print("  · KRX 차단으로 판단 — 네이버 금융 폴백을 시도합니다.")
+            day = collect_naver()
+            if day:
+                payload = {"generated_at": datetime.now(KST).isoformat(timespec="seconds"),
+                           "date": trd_dd, "source": "naver", **day}
+                with open(OUT, "w", encoding="utf-8") as f:
+                    json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+                print(f"저장 → {OUT} (네이버 폴백, 기준일 표기는 페이지 갱신 시점 기준)")
+                return 0
+            print("  ! 폴백도 실패 — 위 로그(미인식 표 헤더 포함)를 공유해 주세요.")
             return 0
         except Exception as e:                 # noqa: BLE001
             print(f"  ! 수집 오류: {e}", file=sys.stderr)
