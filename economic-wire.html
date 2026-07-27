@@ -423,7 +423,6 @@ function selectTab(t){
 }
 TABS.forEach(([t])=>$(t).addEventListener("click",()=>selectTab(t)));
 selectTab("t-ind");
-renderNews(); loadNews(true);
 
 /* ══════════════════ 탭 1 : 핵심 지표 ══════════════════ */
 let IND = null;   // {ts, us10y:{v,chg}, ...}
@@ -674,10 +673,10 @@ const COUNTRIES=[
  {c:"KR",ko:"한국",src:"연합뉴스, 한국경제, 매일경제, 한국은행, 기획재정부, 통계청"},
  {c:"TW",ko:"대만",src:"Focus Taiwan, Taipei Times, Reuters, 중앙은행(CBC), 재정부, DGBAS"},
 ];
-let newsQ="";
+var newsFilter="";
 let DATA=SEED.slice(), filter="ALL", onlyHi=false;
 
-function qTokens(){ return newsQ.split(/[,\s]+/).map(t=>t.trim()).filter(Boolean); }
+function qTokens(){ return newsFilter.split(/[,\s]+/).map(t=>t.trim()).filter(Boolean); }
 function hlight(text,tokens){
   let out=esc(text);
   tokens.forEach(t=>{
@@ -716,7 +715,7 @@ function renderNews(){
       <span class="meter ${d.w>=3?"hi":""}">${meter}</span></a>`;
   }).join("");
 }
-$("newsQ").addEventListener("input",e=>{newsQ=e.target.value; renderNews();});
+$("newsQ").addEventListener("input",e=>{newsFilter=e.target.value; renderNews();});
 document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
   filter=b.dataset.f;document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderNews();}));
 $("onlyHi").addEventListener("change",e=>{onlyHi=e.target.checked;renderNews();});
