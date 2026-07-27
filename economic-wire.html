@@ -135,6 +135,20 @@
   .lead{display:flex;gap:14px;margin-top:8px;font-family:var(--mono);font-size:13px}
   .lead span b{font-weight:600}
   @media (max-width:720px){ .indgrid{grid-template-columns:1fr} }
+  .flowsec{background:var(--card);border:1px solid var(--rule);border-radius:3px;
+           padding:14px 16px;margin-top:14px}
+  .flowsec h3{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
+  .flowsec h3 small{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:400}
+  .flowcols{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-top:11px}
+  .fcol .fh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);
+            padding-bottom:6px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between}
+  .flist{max-height:340px;overflow-y:auto}
+  .frow{display:flex;align-items:baseline;gap:8px;padding:4.5px 2px;border-bottom:1px solid var(--rule);font-size:12.5px}
+  .frow:last-child{border-bottom:0}
+  .frow .rk{font-family:var(--mono);font-size:9.5px;color:var(--muted);width:20px;flex:none;text-align:right}
+  .frow .fn{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frow .fv{font-family:var(--mono);font-size:11.5px;font-weight:600;flex:none}
+  @media (max-width:640px){ .flowcols{grid-template-columns:1fr} .flist{max-height:250px} }
   .readout{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
   .readout b{color:var(--ink);font-weight:600}
   .scale{margin-top:14px;max-width:560px}
@@ -231,14 +245,17 @@
   <!-- ══════════ 탭 1 : 핵심 지표 ══════════ -->
   <section class="panel" id="p-ind" role="tabpanel" aria-labelledby="t-ind">
     <div class="row" style="margin-top:16px">
-      <span class="statusline" id="indStat" style="margin:0;border:0;padding:0">아직 불러온 값이 없습니다. 오른쪽 버튼으로 불러오세요.</span>
+      <span class="statusline" id="indStat" style="margin:0;border:0;padding:0">지표를 읽는 중…</span>
       <span class="spacer"></span>
       <button class="btn" id="indBtn">지표 불러오기</button>
     </div>
     <div class="indgrid" id="indGrid"></div>
+    <div id="flowWrap"></div>
     <div class="note">
-      값은 버튼을 누를 때 웹 검색으로 가져오며, 출처는 CNBC·Investing.com·MarketWatch·CNN(공포&탐욕)·WGB(CDS) 등
-      공개 시세 페이지입니다. 장중에는 수 분 정도 지연될 수 있습니다.<br>
+      값은 수집 서버가 <b>매시간 자동 갱신</b>하며, 이 페이지가 GitHub Pages 에 있으면
+      주소 설정 없이 같은 저장소의 데이터를 자동으로 읽습니다. 출처: 야후 파이낸스 공개 시세,
+      CNN 공포&탐욕 지수, WorldGovernmentBonds(한국 CDS), 한국거래소 KRX(외국인·기관 순매매). 탭을 열면 최신본을 자동으로 읽고,
+      버튼은 즉시 다시 읽기입니다.<br>
       해석 문구는 값에서 자동 계산됩니다 — 방향 참고용이지 매매 지시가 아닙니다.
     </div>
   </section>
@@ -268,7 +285,7 @@
   <section class="panel" id="p-nps" role="tabpanel" aria-labelledby="t-nps" hidden>
 
     <div class="statbar">
-      <div class="stat"><div class="k">기준값 (1Q)</div><div class="v" id="s-base">0</div></div>
+      <div class="stat"><div class="k">기준값</div><div class="v" id="s-base">0</div></div>
       <div class="stat"><div class="k">수신 공시</div><div class="v" id="s-fil">0</div></div>
       <div class="stat"><div class="k">신규 공시</div><div class="v" id="s-new">0</div></div>
       <div class="stat"><div class="k">최종 확인</div><div class="v" id="s-when" style="font-size:14px">—</div></div>
@@ -300,7 +317,7 @@
       </div>
 
       <div class="box">
-        <h3>② 1분기 기준 보유비율</h3>
+        <h3>② 기준 보유비율</h3>
         <p class="sub">피드에 기준값이 들어 있으면 그쪽을 씁니다.
           없을 때 쓸 값을 <b>종목명, 비율(%)</b> 한 줄씩 넣어두세요.</p>
         <textarea id="basein" placeholder="삼성전자, 7.28&#10;SK하이닉스, 8.11&#10;현대차, 7.54"></textarea>
@@ -415,7 +432,7 @@ const IND_DEFS=[
     if(c>=0.3) return `<b class="warn-t">달러 강세</b> → 신흥국·원화 자산에서 자금 이탈 압력`;
     if(c<=-0.3) return `<b class="up">달러 약세</b> → 위험자산에 우호적`;
     return `보합`;}},
- {id:"usdkrw", name:"원/달러 환율 (NDF)", unit:"원",
+ {id:"usdkrw", name:"원/달러 환율", unit:"원",
   why:d=>{const c=d.chg??0, a=Math.abs(c);
     const lv=a>=8?3:(a>=4?2:(a>=1?1:0));
     const bars=`<span class="sig${c<0?' buyside':''}">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join("")}</span>`;
@@ -507,55 +524,98 @@ function renderInd(){
           +(d.chg!==undefined&&d.chg!==null
             ?`<div class="chg ${cls3(d.chg)}">${sgn2(d.chg)}${def.id==="us10y"?"%p":def.id==="usdkrw"?"원":def.id==="wti"||def.id==="btc"?"%":""} (전일比)</div>`:"");
     }
+    const hasVal = def.type==="fut" ? (d.sp!==undefined&&d.sp!==null)||(d.nq!==undefined&&d.nq!==null)
+                 : def.type==="lead" ? !!(d.list&&d.list.length)
+                 : (d.v!==undefined&&d.v!==null);
+    const why = hasVal ? def.why(d)
+      : '<span class="flat">값을 받지 못했습니다 — 다음 시간 자동 갱신에서 재시도합니다</span>';
     return `<div class="card"><div class="k">${def.name}</div>${body}
-      <div class="why">${def.why(d)}</div></div>`;
+      <div class="why">${why}</div></div>`;
   }).join("");
 }
 
-function indPrompt(part){
-  const common=`아래 JSON 만 출력하세요. 설명·코드펜스 금지. 웹 검색으로 현재(최신) 값을 확인하고, 못 찾은 항목은 null.`;
-  if(part===1) return `${common}
-찾을 값: 1) 미국 10년물 국채 금리(%)와 전일 대비 변동(%p) 2) 달러 인덱스 DXY 와 전일 대비 3) 원/달러 환율(원)과 전일 대비(원) — 역외 NDF 우선, 없으면 서울환시 종가 4) 한국 5년물 CDS 프리미엄(bp)
-{"us10y":{"v":0,"chg":0},"dxy":{"v":0,"chg":0},"usdkrw":{"v":0,"chg":0},"cds":{"v":0,"chg":0}}`;
-  return `${common}
-찾을 값: 1) VIX 지수 2) CNN Fear & Greed Index (0~100 정수) 3) 비트코인 달러 시세와 24시간 등락률(%) 4) S&P500 선물과 나스닥100 선물의 등락률(%) 5) WTI 유가($)와 전일 등락률(%) 6) 엔비디아(NVDA)·테슬라(TSLA) 직전 정규장 등락률(%)
-{"vix":{"v":0},"fng":{"v":0},"btc":{"v":0,"chg":0},"futures":{"sp":0,"nq":0},"wti":{"v":0,"chg":0},"leaders":{"list":[{"t":"NVDA","chg":0},{"t":"TSLA","chg":0}]}}`;
+function indUrl(){ return dataUrl("indicators.json"); }
+let FLOWS=null;
+function dataUrl(name){
+  const feed=$("feedUrl").value.trim();
+  if(feed) return feed.replace(/[^\/]+$/, name);
+  // 주소 미입력 시: 이 페이지와 같은 폴더에서 찾는다 (GitHub Pages 동일 출처)
+  if(location.protocol==="https:"||location.protocol==="http:") return name;
+  return null;
+}
+function bust(u){ return u+(u.includes("?")?"&":"?")+"t="+Date.now(); }
+function flowUrl(){ return dataUrl("flows.json"); }
+async function fetchFlows(){
+  const url=flowUrl(); if(!url) return null;
+  const res=await fetch(bust(url),{cache:"no-store"});
+  if(!res.ok) return null;                    // 아직 없으면 조용히 건너뜀
+  return await res.json();
+}
+function renderFlows(){
+  const w=$("flowWrap"); if(!w) return;
+  if(!FLOWS){ w.innerHTML=""; return; }
+  const dt=String(FLOWS.date||"");
+  const dlbl=dt.length===8?`${dt.slice(4,6)}.${dt.slice(6,8)} 기준`:"";
+  const eok=v=>{const a=Math.abs(v); return (v<0?"−":"+")+(a>=10000?(a/10000).toFixed(2)+"조":a.toLocaleString("ko-KR",{maximumFractionDigits:0})+"억");};
+  const col=(rows,label,side)=>{
+    const total=rows.reduce((s,r)=>s+r.v,0);
+    return `<div class="fcol"><div class="fh"><span>${label}</span><span class="${side==="buy"?"up":"dn"}">${eok(total)}</span></div>
+      <div class="flist">${rows.map((r,i)=>
+        `<div class="frow"><span class="rk">${i+1}</span><span class="fn">${esc(r.n)}</span>
+         <span class="fv ${side==="buy"?"up":"dn"}">${eok(r.v)}</span></div>`).join("")||
+        '<div class="frow flat">데이터 없음</div>'}</div></div>`;
+  };
+  const sec=(key,title)=>{const d=FLOWS[key]; if(!d) return "";
+    return `<div class="flowsec"><h3>${title} <small>${dlbl} · 코스피+코스닥 · 억원</small></h3>
+      <div class="flowcols">${col(d.buy||[],"순매수 상위","buy")}${col(d.sell||[],"순매도 상위","sell")}</div></div>`;};
+  w.innerHTML = sec("foreign","외국인 순매매") + sec("inst","기관 순매매");
 }
 
-async function fetchIndPart(part){
-  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,
-      messages:[{role:"user",content:indPrompt(part)}],
-      tools:[{type:"web_search_20250305",name:"web_search"}]})});
-  if(!res.ok) throw new Error("HTTP "+res.status);
-  const data=await res.json();
-  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
-  const m=text.replace(/```json|```/g,"").match(/\{[\s\S]*\}/);
-  return m?JSON.parse(m[0]):{};
+async function fetchIndicators(){
+  const url=indUrl();
+  if(!url) throw new Error("데이터 주소를 알 수 없습니다 — 03 탭에서 피드 주소를 저장하세요");
+  const res=await fetch(bust(url),{cache:"no-store"});
+  if(!res.ok) throw new Error(res.status===404?"indicators.json 이 아직 없습니다 — Actions 에서 '핵심 지표 수집'을 한 번 실행하세요":"HTTP "+res.status);
+  return await res.json();
 }
-
 $("indBtn").addEventListener("click",async()=>{
   const b=$("indBtn"); b.disabled=true; b.textContent="불러오는 중…";
-  $("indStat").textContent="웹 검색으로 10개 지표를 확인하는 중입니다 (30초 안팎)…";
   try{
-    const [p1,p2]=await Promise.all([fetchIndPart(1),fetchIndPart(2)]);
-    IND={...(IND||{}),...p1,...p2,ts:Date.now()};
+    const js=await fetchIndicators();
+    IND={...js, ts: js.generated_at ? Date.parse(js.generated_at) : Date.now()};
     await store("ind:data",IND);
-    renderInd();
-    $("indStat").textContent="갱신 "+new Date().toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+    const fl=await fetchFlows();
+    if(fl){ FLOWS=fl; await store("ind:flows",FLOWS); }
+    renderInd(); renderFlows();
+    $("indStat").textContent="지표 기준 "+new Date(IND.ts).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" · 서버가 매시간 자동 갱신";
   }catch(e){
-    $("indStat").innerHTML=`<span style="color:var(--warn)">불러오기 실패 (${esc(e.message)}). 잠시 후 다시 시도하세요.</span>`;
+    $("indStat").innerHTML=`<span style="color:var(--warn)">${esc(e.message)}</span>`;
   }
   b.disabled=false; b.textContent="지표 불러오기";
 });
 
 (async()=>{
   const saved=await store("ind:data");
-  if(saved&&typeof saved==="object"){ IND=saved;
-    $("indStat").textContent="저장된 값 · "+new Date(saved.ts||Date.now()).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" 기준 — 최신값은 버튼으로 갱신";
-  }
-  renderInd();
+  if(saved&&typeof saved==="object"){ IND=saved; }
+  const savedF=await store("ind:flows");
+  if(savedF&&typeof savedF==="object"){ FLOWS=savedF; }
+  renderInd(); renderFlows();
+  // 피드 주소가 저장돼 있으면 열 때마다 자동 갱신
+  setTimeout(async()=>{
+    try{
+      const js=await fetchIndicators();
+      IND={...js, ts: js.generated_at ? Date.parse(js.generated_at) : Date.now()};
+      await store("ind:data",IND);
+      const fl=await fetchFlows();
+      if(fl){ FLOWS=fl; await store("ind:flows",FLOWS); }
+      renderInd(); renderFlows();
+      $("indStat").textContent="지표 기준 "+new Date(IND.ts).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" · 서버가 매시간 자동 갱신";
+    }catch(e){
+      $("indStat").textContent = IND
+        ? "저장된 값 표시 중 — "+e.message
+        : e.message;
+    }
+  }, 800);
 })();
 
 /* ══════════════════ 탭 2 : 뉴스 ══════════════════ */
@@ -640,7 +700,7 @@ $("btn").addEventListener("click",async()=>{
     $("seednote").textContent="실시간 검색 결과입니다. 최근 48시간 기사 위주로 수집합니다.";
     $("live").innerHTML=failed.length?`<div class="err">${failed.join(" · ")} 는 조건을 만족하는 기사를 찾지 못했습니다.</div>`:"";
   }else{
-    $("live").innerHTML=`<div class="err">갱신에 실패했습니다. 잠시 후 다시 시도하세요. (초기 스냅샷 유지)</div>`;
+    $("live").innerHTML=`<div class="err">갱신 실패 — 이 버튼의 AI 검색은 Claude 앱에서 열었을 때만 동작합니다. 여기서는 저장된 헤드라인이 유지됩니다.</div>`;
   }
   $("btn").disabled=false;
 });
@@ -682,10 +742,13 @@ function isTarget(r){
 /* --- 피드 수신 --- */
 async function pullFeed(url,quiet){
   const stat=$("feedStat");
-  if(!url){ if(!quiet) stat.textContent="주소를 먼저 넣고 저장하세요."; return; }
+  if(!url){
+    if(location.protocol==="https:"||location.protocol==="http:") url="nps-latest.json";
+    else { if(!quiet) stat.textContent="주소를 먼저 넣고 저장하세요."; return; }
+  }
   stat.textContent="확인 중…";
   try{
-    const res=await fetch(url,{cache:"no-store"});
+    const res=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"});
     if(!res.ok) throw new Error("HTTP "+res.status);
     const js=await res.json();
     const list=Array.isArray(js)?js:(js.filings||js.list||js.data||[]);
@@ -996,6 +1059,7 @@ $("copyRep").addEventListener("click",async()=>{
   syncTierUI();
   const u=await store("nps:url");
   drawBase(); runReport();
-  if(u){ $("feedUrl").value=u; schedule(); pullFeed(u,true); }
+  if(u){ $("feedUrl").value=u; }
+  schedule(); pullFeed(u||"",true);
 })();
 </script>
