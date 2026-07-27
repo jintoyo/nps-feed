@@ -45,6 +45,7 @@ UA = {"User-Agent": "Mozilla/5.0 economic-wire/1.0", "Content-Type": "applicatio
 # 국내기관_외국인 매매종목가집계 (국내주식-037)
 # https://apiportal.koreainvestment.com/apiservice-apiservice?/uapi/domestic-stock/v1/quotations/foreign-institution-total=
 TR_ID = "FHPTJ04400000"
+_sample_printed = False
 ENDPOINT = "/uapi/domestic-stock/v1/quotations/foreign-institution-total"
 
 
@@ -101,6 +102,11 @@ def call_ranking(token: str, *, mkt_div: str, rank_sort: str, etc_cls: str) -> l
     for key in ("output", "output1", "output2"):
         rows = js.get(key)
         if isinstance(rows, list) and rows:
+            global _sample_printed
+            if not _sample_printed:
+                print(f"  · [진단] 원본 행 샘플(mkt={mkt_div},rank={rank_sort},etc={etc_cls}): "
+                      f"{json.dumps(rows[0], ensure_ascii=False)}")
+                _sample_printed = True
             return rows
     print(f"  ! 목록 없음 — 응답 키: {list(js.keys())} / 원본 일부: "
           f"{json.dumps(js, ensure_ascii=False)[:400]}", file=sys.stderr)
@@ -117,6 +123,39 @@ def pick_num(row: dict, *names):
     return None
 
 
+import re as _re
+
+def auto_amount_field(rows: list[dict]) -> str | None:
+    """
+    금액 필드명을 짐작하지 않고, 실제 응답에서 스스로 찾는다.
+    후보 조건: 필드명에 금액/순매수 관련 키워드가 있고, 상위 몇 행에서 값이
+    크고 0이 아니며, 대체로 내림차순(순위표이므로)인 필드를 고른다.
+    """
+    if not rows:
+        return None
+    keys = set()
+    for r in rows[:5]:
+        keys |= set(r.keys())
+    cand = [k for k in keys if _re.search(r"(pbmn|amt|tr_pbmn|ntby)", k, _re.I)]
+    best, best_score = None, -1
+    for k in cand:
+        vals = []
+        for r in rows[:10]:
+            try:
+                vals.append(abs(float(str(r.get(k, "0")).replace(",", ""))))
+            except (TypeError, ValueError):
+                vals.append(0)
+        nonzero = sum(1 for v in vals if v > 0)
+        magnitude = sum(vals)
+        score = nonzero * 1_000_000_000 + magnitude  # 0이 아닌 개수 우선, 그다음 크기
+        if score > best_score:
+            best, best_score = k, score
+    if best:
+        print(f"  · [자동감지] 금액 필드 추정: '{best}' "
+              f"(샘플값: {[r.get(best) for r in rows[:3]]})")
+    return best
+
+
 def pick_str(row: dict, *names):
     for n in names:
         if n in row and str(row[n]).strip():
@@ -127,11 +166,13 @@ def pick_str(row: dict, *names):
 def normalize(rows: list[dict]) -> list[dict]:
     """행 하나를 {n(종목명), v(순매매금액, 억원)} 로 정규화."""
     out = []
+    amt_key = auto_amount_field(rows)
     for r in rows:
         name = pick_str(r, "hts_kor_isnm", "isnm", "name")
-        # 금액 필드명 후보: ntby_qty(순매수량) / ntby_tr_pbmn(순매수 거래대금, 원 단위 추정)
-        amt = pick_num(r, "ntby_tr_pbmn", "ntby_trad_pbmn", "frgn_ntby_tr_pbmn",
-                        "ntby_qty_pbmn", "ntby_prsm_amt")
+        amt = pick_num(r, amt_key) if amt_key else None
+        if amt is None:
+            amt = pick_num(r, "ntby_tr_pbmn", "ntby_trad_pbmn", "frgn_ntby_tr_pbmn",
+                            "ntby_qty_pbmn", "ntby_prsm_amt")
         if name is None or amt is None:
             continue
         out.append({"n": name, "v": round(amt / 1e8, 1)})  # 원 → 억원 추정
