@@ -28,14 +28,34 @@ URLS = (
     "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd",
     "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd",
 )
+WARMUP = "https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020304"
 HEADERS = {
     "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"),
     "Referer": "https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020304",
     "Origin": "https://data.krx.co.kr",
     "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Language": "ko-KR,ko;q=0.9",
     "X-Requested-With": "XMLHttpRequest",
 }
+SESSION = requests.Session()
+SESSION.headers.update(HEADERS)
+_warmed = False
+
+
+def warm_up():
+    """첫 호출 전에 실제 화면을 한 번 방문해 세션 쿠키를 받는다."""
+    global _warmed
+    if _warmed:
+        return
+    try:
+        r = SESSION.get(WARMUP, timeout=20)
+        print(f"  · 워밍업: HTTP {r.status_code}, 쿠키 {len(SESSION.cookies)}개")
+    except Exception as e:  # noqa: BLE001
+        print(f"  · 워밍업 실패(계속 진행): {type(e).__name__}: {e}", file=sys.stderr)
+    _warmed = True
+
+
 INVESTORS = {"foreign": "9000", "inst": "7050"}   # 외국인 / 기관합계
 MARKETS = ("STK", "KSQ")                          # 코스피 / 코스닥
 TOP_N = 100
@@ -60,11 +80,18 @@ def krx_rows(trd_dd: str, invst: str, mkt: str) -> list:
         "money": "1",
         "csvxls_isNo": "false",
     }
+    warm_up()
     last_err = None
     for url in URLS:
         try:
-            r = requests.post(url, data=data, headers=HEADERS, timeout=25)
+            r = SESSION.post(url, data=data, timeout=25)
             r.raise_for_status()
+            ct = r.headers.get("Content-Type", "")
+            if "json" not in ct and "javascript" not in ct:
+                print(f"    - {mkt}/{invst} @ {url.split('/')[2]}: JSON 아님 "
+                      f"(Content-Type={ct}, 응답 앞부분: {r.text[:80]!r})", file=sys.stderr)
+                last_err = RuntimeError(f"비정상 응답({ct})")
+                continue
             js = r.json()
             for key in ("output", "OutBlock_1", "block1"):
                 if isinstance(js.get(key), list):
@@ -74,8 +101,9 @@ def krx_rows(trd_dd: str, invst: str, mkt: str) -> list:
             return []
         except Exception as e:  # noqa: BLE001
             last_err = e
-            print(f"    - {mkt}/{invst} @ {url.split('/')[2]}: 실패 ({e})", file=sys.stderr)
-    raise RuntimeError(f"KRX 접속 불가: {last_err}")
+            print(f"    - {mkt}/{invst} @ {url.split('/')[2]}: "
+                  f"{type(e).__name__}: {e}", file=sys.stderr)
+    raise RuntimeError(f"KRX 접속 불가 — 마지막 오류: {type(last_err).__name__}: {last_err}")
 
 
 def pick(row: dict, *names):
