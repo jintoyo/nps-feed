@@ -261,6 +261,19 @@ def main() -> int:
         print("  · 이 기간에 국민연금 공시 없음 — 기존 피드를 보존하고 종료합니다.")
         return 0
 
+    # 접수번호 기준 중복 제거 (분할 조회 경계 등 어떤 경우에도 한 건은 한 번만)
+    seen_rcpt = set()
+    uniq = []
+    for r in mine:
+        rc = str(r.get("rcept_no", ""))
+        if rc and rc in seen_rcpt:
+            continue
+        seen_rcpt.add(rc)
+        uniq.append(r)
+    if len(uniq) != len(mine):
+        print(f"  · 중복 제거: {len(mine)} → {len(uniq)}건")
+    mine = uniq
+
     filings = []
     for i, r in enumerate(mine, 1):
         corp = (r.get("corp_name") or "").strip()
@@ -272,14 +285,7 @@ def main() -> int:
         verdict, delta, rel = judge(rate, base_rate, args.threshold, args.strong)
 
         dt = r.get("rcept_dt", "")
-        # 이력에 먼저 넣지 말고, 직전 공시부터 찾는다
-        pv = prev_of(history, corp, rcept, dt)
-        prev_rate = pv.get("rate") if pv else None
-        prev_date = pv.get("date") if pv else None
-        d_prev = ((bp(rate) - bp(prev_rate)) / 100
-                  if rate is not None and prev_rate is not None else None)
-
-        # 이력 누적 (접수번호로 중복 방지)
+        # 이력 누적 (접수번호로 중복 방지) — 직전 값은 전체 적재 후 2단계에서 계산
         if rcept:
             history["filings"][rcept] = {
                 "corp": corp, "rcept_no": rcept, "date": dt,
@@ -297,15 +303,26 @@ def main() -> int:
             "base": base_rate,
             "delta": delta,
             "delta_rel": rel,
-            "prev": prev_rate,
-            "prev_date": prev_date,
-            "delta_prev": d_prev,
+            "prev": None,
+            "prev_date": None,
+            "delta_prev": None,
             "verdict": verdict,
             "url": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcept}" if rcept else "",
         })
         print(f"    [{i}/{len(mine)}] {corp:<16} "
               f"{'' if rate is None else f'{rate:6.2f}%'}  {verdict}")
         time.sleep(SLEEP)
+
+    # 2단계: 이력이 전부 채워진 뒤 각 공시의 직전 보고를 계산 — 처리 순서에 무관
+    for f in filings:
+        pv = prev_of(history, f["corp"], f["rcept_no"], f["date"])
+        if pv and pv.get("rate") is not None:
+            f["prev"] = pv["rate"]
+            f["prev_date"] = pv.get("date")
+            if f["rate"] is not None:
+                f["delta_prev"] = (bp(f["rate"]) - bp(pv["rate"])) / 100
+    with_prev = sum(1 for f in filings if f["prev"] is not None)
+    print(f"  · 직전 공시 연결: {with_prev}/{len(filings)}건")
 
     # ★ 안전장치 3: 빈 이력으로 기존 이력을 덮어쓰지 않는다
     hist_n = len(history["filings"])
