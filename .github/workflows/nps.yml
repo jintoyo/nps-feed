@@ -1,38 +1,1050 @@
-name: NPS 지분공시 수집
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-on:
-  schedule:
-    # DART 공시는 장 마감 후 몰리므로 평일 19:10 KST (= 10:10 UTC)
-    - cron: "10 10 * * 1-5"
-  workflow_dispatch:        # 버튼으로 즉시 실행
+<style>
+  :root{
+    --paper:#ECEDE8; --card:#FFFFFF; --ink:#16181D; --muted:#767B85;
+    --rule:#D6D8D1; --accent:#0E4749; --warn:#8A4B10;
+    --sbuy:#0F5132; --buy:#3F8F66; --sell:#C25B52; --ssell:#8B1A1A; --hold:#5E636C;
+    --sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 64px}
 
-permissions:
-  contents: write
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:6px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:0;line-height:1.15}
+  h1 .thin{font-weight:400;color:var(--muted)}
+  .status{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+       background:var(--ink);color:var(--paper);border:0;border-radius:2px;padding:9px 15px;cursor:pointer;transition:opacity .15s}
+  .btn:hover{opacity:.82}
+  .btn:disabled{opacity:.4;cursor:progress}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--rule)}
+  .btn.ghost:hover{color:var(--ink);border-color:var(--ink);opacity:1}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-jobs:
-  collect:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  /* tabs */
+  .tabs{display:flex;gap:26px;margin-top:22px;border-bottom:1px solid var(--rule)}
+  .tab{background:none;border:0;padding:0 0 11px;cursor:pointer;font-family:var(--sans);
+       font-size:14.5px;font-weight:600;color:var(--muted);letter-spacing:-.01em;position:relative}
+  .tab .n{font-family:var(--mono);font-size:10px;letter-spacing:.1em;display:block;font-weight:500;margin-bottom:4px;opacity:.7}
+  .tab[aria-selected="true"]{color:var(--ink)}
+  .tab[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .panel[hidden]{display:none}
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+  /* filters */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:16px 0 4px}
+  .chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;background:transparent;
+        border:1px solid var(--rule);color:var(--muted);border-radius:2px;padding:7px 11px;cursor:pointer;transition:all .14s}
+  .chip:hover{border-color:var(--ink);color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .spacer{flex:1}
+  .toggle{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .toggle input{accent-color:var(--accent);cursor:pointer}
 
-      - run: pip install requests
+  /* news feed */
+  .feed{margin-top:14px;border-top:1px solid var(--rule)}
+  a.item{display:grid;grid-template-columns:64px 1fr auto;gap:0 18px;align-items:start;
+         padding:15px 14px 15px 0;text-decoration:none;color:inherit;border-bottom:1px solid var(--rule);position:relative;transition:background .14s}
+  a.item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);
+                 transform:scaleY(0);transform-origin:top;transition:transform .18s ease}
+  a.item:hover{background:var(--card)}
+  a.item:hover::before{transform:scaleY(1)}
+  a.item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;background:var(--card)}
+  .spine{padding-left:14px;font-family:var(--mono);line-height:1.35}
+  .code{font-size:12px;font-weight:600;letter-spacing:.1em;display:block}
+  .time{font-size:10.5px;color:var(--muted);display:block;margin-top:3px}
+  .head{font-size:16px;font-weight:600;line-height:1.45;letter-spacing:-.012em;margin:0 0 5px;word-break:keep-all}
+  a.item:hover .head{color:var(--accent)}
+  .meta{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.03em}
+  .meta .src{color:var(--ink);font-weight:500}
+  .meter{display:flex;gap:3px;padding-top:5px}
+  .meter i{width:5px;height:5px;background:var(--rule);border-radius:1px;display:block}
+  .meter i.on{background:var(--ink)}
+  .meter.hi i.on{background:var(--warn)}
 
-      - name: 공시 수집
-        env:
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
-          NPS_DAYS: "45"
-          NPS_THRESHOLD: "1.00"
-          NPS_STRONG: "3.00"
-        run: python collect.py
+  .note{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;margin-top:22px;border-top:1px solid var(--rule);padding-top:14px}
+  .empty{padding:44px 14px;font-size:14px;color:var(--muted);line-height:1.7}
+  .loading{font-family:var(--mono);font-size:11.5px;color:var(--accent);padding:10px 14px;letter-spacing:.06em}
+  .dot{display:inline-block;animation:blink 1.1s infinite}
+  @keyframes blink{0%,60%{opacity:1}80%,100%{opacity:.15}}
+  .err{font-family:var(--mono);font-size:11.5px;color:var(--warn);padding:10px 14px}
 
-      - name: 변경분만 커밋
-        run: |
-          git config user.name  "nps-bot"
-          git config user.email "nps-bot@users.noreply.github.com"
-          git add nps-latest.json nps-history.json
-          git diff --staged --quiet || git commit -m "공시 갱신 $(date -u +'%Y-%m-%d %H:%M')"
-          git push
+  /* ── 지분공시 탭 ─────────────────────────── */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+  .box{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:15px 16px}
+  .box h3{margin:0 0 3px;font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .box p.sub{margin:0 0 12px;font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.6}
+  .drop{border:1px dashed var(--rule);border-radius:3px;padding:20px 14px;text-align:center;
+        font-family:var(--mono);font-size:11.5px;color:var(--muted);cursor:pointer;transition:all .14s;line-height:1.7}
+  .drop:hover,.drop.over{border-color:var(--accent);color:var(--accent);background:var(--paper)}
+  textarea{width:100%;min-height:96px;font-family:var(--mono);font-size:11.5px;line-height:1.6;
+           border:1px solid var(--rule);border-radius:3px;padding:9px 10px;resize:vertical;background:var(--paper);color:var(--ink)}
+  textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .num{font-family:var(--mono);font-size:11.5px;width:64px;padding:7px 8px;border:1px solid var(--rule);
+       border-radius:2px;background:var(--paper);color:var(--ink)}
+
+  .field{width:100%;font-family:var(--mono);font-size:11.5px;padding:8px 10px;
+         border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+  .field:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  select.sel{width:auto;cursor:pointer}
+  .statusline{font-family:var(--mono);font-size:10.5px;color:var(--muted);
+              line-height:1.6;margin-top:10px;padding-top:9px;border-top:1px solid var(--rule)}
+  .tierbox{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .tierbox select{font-family:var(--mono);font-size:11.5px;padding:7px 9px;
+        border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--ink);cursor:pointer}
+  .tierbox select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .custom{display:none;gap:6px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .custom.on{display:flex}
+  .custom .num{width:60px}
+  .indgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:14px 16px 13px}
+  .card .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .card .v{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.02em;margin-top:7px;line-height:1.1}
+  .card .v small{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+  .card .chg{font-family:var(--mono);font-size:11.5px;margin-top:4px}
+  .card .why{font-size:12px;line-height:1.55;margin-top:9px;padding-top:9px;border-top:1px solid var(--rule);word-break:keep-all}
+  .why b{font-weight:700}
+  .up{color:var(--sbuy)} .dn{color:var(--ssell)} .flat{color:var(--muted)}
+  .warn-t{color:var(--warn)}
+  /* 게이지 */
+  .gauge{margin-top:10px}
+  .gtrack{display:flex;height:10px;border-radius:5px;overflow:hidden}
+  .gtrack i{flex:1}
+  .gz1{background:#2F7D5B}.gz2{background:#8FBC8F}.gz3{background:#D9C87C}.gz4{background:#C97B5A}.gz5{background:#8B1A1A}
+  .gneedle{position:relative;height:0}
+  .gneedle b{position:absolute;top:-15px;width:2px;height:20px;background:var(--ink);transform:translateX(-1px)}
+  .glabels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:5px}
+  /* 신호 세기 */
+  .sig{display:inline-flex;gap:3px;vertical-align:-1px;margin-left:6px}
+  .sig i{width:6px;height:11px;background:var(--rule);border-radius:1px}
+  .sig i.on{background:var(--ssell)}
+  .sig.buyside i.on{background:var(--sbuy)}
+  /* 주도주 목록 */
+  .lead{display:flex;gap:14px;margin-top:8px;font-family:var(--mono);font-size:13px}
+  .lead span b{font-weight:600}
+  @media (max-width:720px){ .indgrid{grid-template-columns:1fr} }
+  .flowsec{background:var(--card);border:1px solid var(--rule);border-radius:3px;
+           padding:14px 16px;margin-top:14px}
+  .flowsec h3{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
+  .flowsec h3 small{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:400}
+  .flowcols{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-top:11px}
+  .fcol .fh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);
+            padding-bottom:6px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between}
+  .flist{max-height:340px;overflow-y:auto}
+  .frow{display:flex;align-items:baseline;gap:8px;padding:4.5px 2px;border-bottom:1px solid var(--rule);font-size:12.5px}
+  .frow:last-child{border-bottom:0}
+  .frow .rk{font-family:var(--mono);font-size:9.5px;color:var(--muted);width:20px;flex:none;text-align:right}
+  .frow .fn{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frow .fv{font-family:var(--mono);font-size:11.5px;font-weight:600;flex:none}
+  @media (max-width:640px){ .flowcols{grid-template-columns:1fr} .flist{max-height:250px} }
+  .readout{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .readout b{color:var(--ink);font-weight:600}
+  .scale{margin-top:14px;max-width:560px}
+  .band{display:flex;border-radius:2px;overflow:hidden}
+  .seg{flex:1;text-align:center;font-family:var(--mono);font-size:10px;
+       padding:6px 2px;color:#fff;letter-spacing:.02em;white-space:nowrap}
+  .seg.s4{background:var(--ssell)} .seg.s3{background:var(--sell)}
+  .seg.s0{background:var(--card);color:var(--hold);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .seg.s1{background:var(--buy)} .seg.s2{background:var(--sbuy)}
+  .ticks{display:flex;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:4px}
+  .ticks span{flex:1;text-align:right;padding-right:2px}
+  .ticks span:last-child{text-align:left;padding:0 0 0 2px}
+  .extra{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .extra i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .statbar{display:flex;gap:0;margin-top:20px;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--card)}
+  .stat{flex:1;padding:13px 15px;border-right:1px solid var(--rule)}
+  .stat:last-child{border-right:0}
+  .stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:5px;letter-spacing:-.02em}
+
+  .rep{margin-top:20px;border-top:1px solid var(--rule)}
+  a.rrow{display:grid;grid-template-columns:1fr 132px 98px 88px;gap:0 16px;align-items:center;
+         padding:14px 14px 14px 0;text-decoration:none;color:inherit;border-bottom:1px solid var(--rule);position:relative;transition:background .14s}
+  a.rrow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);
+                 transform:scaleY(0);transform-origin:top;transition:transform .18s}
+  a.rrow:hover{background:var(--card)}
+  a.rrow:hover::before{transform:scaleY(1)}
+  a.rrow:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;background:var(--card)}
+  .nm{padding-left:14px}
+  .nm b{font-size:15px;font-weight:600;letter-spacing:-.012em;display:block}
+  .nm span{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:block;margin-top:3px}
+  .bars{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap}
+  .bars b{color:var(--ink);font-weight:600}
+  .bars .prevline{display:block;font-size:9.5px;color:var(--muted);margin-top:3px}
+  .bars .prevline b{font-size:9.5px;font-weight:600}
+  .delta{font-family:var(--mono);font-size:14px;font-weight:600;text-align:right;letter-spacing:-.02em}
+  .verdict{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;
+           text-align:center;padding:5px 0;border-radius:2px;color:#fff}
+  .v-sbuy{background:var(--sbuy)} .v-buy{background:var(--buy)}
+  .v-sell{background:var(--sell)} .v-ssell{background:var(--ssell)}
+  .v-hold{background:transparent;color:var(--hold);border:1px solid var(--rule)}
+  .v-new{background:var(--accent)} .v-exit{background:var(--ink)}
+  .delta .sub{display:block;font-size:9.5px;font-weight:400;color:var(--muted);margin-top:2px}
+  .d-up{color:var(--sbuy)} .d-dn{color:var(--ssell)} .d-flat{color:var(--muted)}
+  .newtag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+          background:var(--warn);color:#fff;padding:1px 5px;border-radius:2px;margin-left:7px;vertical-align:2px}
+
+  .btable{width:100%;border-collapse:collapse;margin-top:11px;font-family:var(--mono);font-size:11.5px}
+  .btable th{text-align:left;font-weight:500;color:var(--muted);font-size:9.5px;letter-spacing:.11em;
+             text-transform:uppercase;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+  .btable td{padding:6px 8px 6px 0;border-bottom:1px solid var(--rule)}
+  .btable td:last-child{text-align:right;width:24px}
+  .btable .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px}
+  .btable .x:hover{color:var(--sell)}
+  .scroll{max-height:210px;overflow:auto}
+
+  @media (max-width:720px){
+    .grid2{grid-template-columns:1fr}
+    a.rrow{grid-template-columns:1fr 88px;gap:8px 12px}
+    .bars{grid-column:1;text-align:left;padding-left:14px}
+    .delta{grid-column:2;grid-row:1}
+    .verdict{grid-column:2}
+    .statbar{flex-wrap:wrap}
+    .stat{flex:1 1 50%;border-bottom:1px solid var(--rule)}
+  }
+  @media (max-width:620px){
+    h1{font-size:24px}
+    a.item{grid-template-columns:52px 1fr;gap:0 12px;padding-right:0}
+    .meter{grid-column:2;padding-top:8px}
+    .head{font-size:15px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Economic Wire · US · CN · JP · KR · TW</div>
+  <div class="masthead">
+    <h1>5개국 경제 <span class="thin">헤드라인</span></h1>
+    <div class="status">
+      <span id="stamp">스냅샷 07.27</span>
+      <button class="btn" id="btn">최신으로 갱신</button>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-ind" aria-selected="true" aria-controls="p-ind">
+      <span class="n">01</span>핵심 지표</button>
+    <button class="tab" role="tab" id="t-news" aria-selected="false" aria-controls="p-news">
+      <span class="n">02</span>경제 헤드라인</button>
+    <button class="tab" role="tab" id="t-nps" aria-selected="false" aria-controls="p-nps">
+      <span class="n">03</span>국민연금 지분공시</button>
+  </div>
+
+  <!-- ══════════ 탭 1 : 핵심 지표 ══════════ -->
+  <section class="panel" id="p-ind" role="tabpanel" aria-labelledby="t-ind">
+    <div class="row" style="margin-top:16px">
+      <span class="statusline" id="indStat" style="margin:0;border:0;padding:0">지표를 읽는 중…</span>
+      <span class="spacer"></span>
+      <button class="btn" id="indBtn">지표 불러오기</button>
+    </div>
+    <div class="indgrid" id="indGrid"></div>
+    <div id="flowWrap"></div>
+    <div class="note">
+      값은 수집 서버가 <b>매시간 자동 갱신</b>합니다. 출처: 야후 파이낸스 공개 시세,
+      CNN 공포&탐욕 지수, WorldGovernmentBonds(한국 CDS), 한국거래소 KRX(외국인·기관 순매매). 탭을 열면 최신본을 자동으로 읽고,
+      버튼은 즉시 다시 읽기입니다.<br>
+      해석 문구는 값에서 자동 계산됩니다 — 방향 참고용이지 매매 지시가 아닙니다.
+    </div>
+  </section>
+
+  <!-- ══════════ 탭 1 ══════════ -->
+  <section class="panel" id="p-news" role="tabpanel" aria-labelledby="t-news" hidden>
+    <div class="filters">
+      <button class="chip" data-f="ALL" aria-pressed="true">ALL</button>
+      <button class="chip" data-f="US" aria-pressed="false">US 미국</button>
+      <button class="chip" data-f="CN" aria-pressed="false">CN 중국</button>
+      <button class="chip" data-f="JP" aria-pressed="false">JP 일본</button>
+      <button class="chip" data-f="KR" aria-pressed="false">KR 한국</button>
+      <button class="chip" data-f="TW" aria-pressed="false">TW 대만</button>
+      <span class="spacer"></span>
+      <label class="toggle"><input type="checkbox" id="onlyHi"> 중요도 상위만</label>
+    </div>
+    <div id="live"></div>
+    <div class="feed" id="feed"></div>
+    <div class="note">
+      출처는 중앙은행·통계기관·통신사(Reuters·Bloomberg·Nikkei·연합뉴스 등) 및 주요 경제지로 제한합니다.<br>
+      헤드라인을 누르면 원문 기사가 새 탭에서 열립니다. 중요도는 ■ 1~3단계.<br>
+      <span id="seednote">아래는 초기 스냅샷입니다. “최신으로 갱신”을 누르면 실시간 검색으로 다시 채웁니다.</span>
+    </div>
+  </section>
+
+  <!-- ══════════ 탭 2 ══════════ -->
+  <section class="panel" id="p-nps" role="tabpanel" aria-labelledby="t-nps" hidden>
+
+    <div class="statbar">
+      <div class="stat"><div class="k">기준값</div><div class="v" id="s-base">0</div></div>
+      <div class="stat"><div class="k">수신 공시</div><div class="v" id="s-fil">0</div></div>
+      <div class="stat"><div class="k">신규 공시</div><div class="v" id="s-new">0</div></div>
+      <div class="stat"><div class="k">최종 확인</div><div class="v" id="s-when" style="font-size:14px">—</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="box">
+        <h3>① 공시 피드 연결</h3>
+        <p class="sub">수집 서버가 만든 JSON 주소를 한 번만 넣어두면,
+          탭을 열 때마다 자동으로 읽고 설정한 주기로 다시 확인합니다.</p>
+        <input class="field" id="feedUrl" type="url" spellcheck="false"
+               placeholder="https://raw.githubusercontent.com/…/nps-latest.json">
+        <div class="row">
+          <select class="field sel" id="poll">
+            <option value="0">자동 새로고침 끔</option>
+            <option value="300000">5분마다</option>
+            <option value="900000" selected>15분마다</option>
+            <option value="3600000">1시간마다</option>
+          </select>
+          <button class="btn ghost" id="saveFeed">주소 저장</button>
+          <button class="btn" id="pullNow">지금 확인</button>
+        </div>
+        <div class="statusline" id="feedStat">연결된 피드가 없습니다.</div>
+        <div class="row">
+          <button class="btn ghost" id="searchMode" title="피드 없이 웹 검색으로 대략 확인">검색으로 간이 확인</button>
+          <button class="btn ghost" id="pickFile" title="네트워크가 막혔을 때만">파일로 불러오기</button>
+          <input type="file" id="file" accept=".csv,.txt,.tsv,.xls,.xlsx,.json" hidden>
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>② 기준 보유비율</h3>
+        <p class="sub">피드에 기준값이 들어 있으면 그쪽을 씁니다.
+          없을 때 쓸 값을 <b>종목명, 비율(%)</b> 한 줄씩 넣어두세요.</p>
+        <textarea id="basein" placeholder="삼성전자, 7.28&#10;SK하이닉스, 8.11&#10;현대차, 7.54"></textarea>
+        <div class="row">
+          <button class="btn ghost" id="addBase">기준값 저장</button>
+          <button class="btn ghost" id="expBase">JSON 내보내기</button>
+          <button class="btn ghost" id="wipeBase">전체 삭제</button>
+        </div>
+        <div class="scroll"><table class="btable" id="btbl"></table></div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <div class="tierbox">
+        <select id="metric" title="지분율이 몇 %p 움직였는지(변화폭) 볼지, 원래 보유량 대비 몇 %인지(보유대비) 볼지">
+          <option value="abs" selected>변화폭 %p</option>
+          <option value="rel">보유대비 %</option>
+        </select>
+        <select id="tier"></select>
+        <span class="custom" id="customBox">
+          <input class="num" type="number" id="thrMild" value="1.00" step="0.01" min="0" title="1차 임계치">
+          <input class="num" type="number" id="thrStrong" value="3.00" step="0.01" min="0" title="2차 임계치">
+        </span>
+        <span class="readout" id="thrOut"></span>
+      </div>
+      <label class="toggle" style="font-size:11.5px;margin-left:6px">
+        <input type="checkbox" id="allRows"> 이전 공시도 함께 보기</label>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="copyRep">리포트 복사</button>
+    </div>
+
+    <div class="scale" id="scale">
+      <div class="band">
+        <span class="seg s4">당장매도</span>
+        <span class="seg s3">매도</span>
+        <span class="seg s0">유지</span>
+        <span class="seg s1">매수</span>
+        <span class="seg s2">적극매수</span>
+      </div>
+      <div class="ticks">
+        <span id="tk1"></span><span id="tk2"></span><span></span><span id="tk3"></span><span id="tk4"></span>
+      </div>
+      <div class="extra">
+        <span><i style="background:var(--accent)"></i>신규 — 기준값에 없던 종목</span>
+        <span><i style="background:var(--ink)"></i>청산 — 보유 0%</span>
+      </div>
+    </div>
+
+    <div class="rep" id="rep"></div>
+
+    <div class="note">
+      임계치의 기준점은 자본시장법 §147의 <b>변동보고 의무 1%p</b>입니다. 보고서가 존재한다는 것 자체가
+      직전 보고 대비 1%p 이상 움직였다는 뜻이므로, 1%p 미만 증감은 대개 매매가 아니라
+      분모 변동(유상증자·자사주 소각·전환)이나 보유목적 변경에서 나옵니다.<br>
+      모든 비교는 <b>0.01%p 단위 정수</b>로 수행합니다. 부동소수점 오차가 없어 엑셀에서 같은 값으로
+      계산했을 때와 판정이 어긋나지 않습니다.<br>
+      종목명을 누르면 DART 원문(접수번호 기준)이 새 탭에서 열립니다.
+      대량보유 <b>변동보고 의무는 1%p 단위</b>라 그 사이 미세 변동은 공시에 잡히지 않습니다.<br>
+      새 공시가 없으면 “변동 없음” 상태만 표시합니다.
+    </div>
+  </section>
+</div>
+
+<script>
+/* ══════════════════ 공통 ══════════════════ */
+function esc(s){return String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+const $=id=>document.getElementById(id);
+
+const MEM={};
+async function store(k,v){
+  const read=(v===undefined);
+  // 1순위: 아티팩트 저장소
+  try{
+    if(read){const r=await window.storage.get(k);if(r)return JSON.parse(r.value);}
+    else{await window.storage.set(k,JSON.stringify(v));return v;}
+  }catch(e){}
+  // 2순위: 브라우저 localStorage (파일로 열거나 GitHub Pages로 열었을 때)
+  try{
+    if(read){const r=localStorage.getItem("ew:"+k);if(r!==null)return JSON.parse(r);}
+    else{localStorage.setItem("ew:"+k,JSON.stringify(v));return v;}
+  }catch(e){}
+  // 3순위: 이번 세션 동안만 기억
+  if(read)return MEM[k]!==undefined?MEM[k]:null;
+  MEM[k]=v; return v;
+}
+
+/* 탭 전환 */
+const TABS=[["t-ind","p-ind"],["t-news","p-news"],["t-nps","p-nps"]];
+function selectTab(t){
+  TABS.forEach(([tt,pp])=>{const on=tt===t;$(tt).setAttribute("aria-selected",String(on));$(pp).hidden=!on;});
+  $("btn").style.display = t==="t-news" ? "" : "none";
+  $("stamp").style.display = t==="t-news" ? "" : "none";
+}
+TABS.forEach(([t])=>$(t).addEventListener("click",()=>selectTab(t)));
+selectTab("t-ind");
+
+/* ══════════════════ 탭 1 : 핵심 지표 ══════════════════ */
+let IND = null;   // {ts, us10y:{v,chg}, ...}
+
+const sgn2=(n,d=2)=>(n>0?"+":"")+Number(n).toFixed(d);
+const cls3=n=>n>0.0001?"up":(n<-0.0001?"dn":"flat");
+
+/* 해석은 전부 로컬 계산 — 검색 결과에는 숫자만 요구한다 */
+const IND_DEFS=[
+ {id:"us10y", name:"미국 10년물 국채 금리", unit:"%",
+  why:d=>{const c=d.chg??0;
+    if(c>=0.03) return `<b class="warn-t">금리 상승</b> → 주식·부동산에 하락 압력`;
+    if(c<=-0.03) return `<b class="up">금리 하락</b> → 주식·부동산에 우호적`;
+    return `보합 — 금리발 압력 크지 않음`;}},
+ {id:"dxy", name:"달러 인덱스 (DXY)", unit:"",
+  why:d=>{const c=d.chg??0;
+    if(c>=0.3) return `<b class="warn-t">달러 강세</b> → 신흥국·원화 자산에서 자금 이탈 압력`;
+    if(c<=-0.3) return `<b class="up">달러 약세</b> → 위험자산에 우호적`;
+    return `보합`;}},
+ {id:"usdkrw", name:"원/달러 환율", unit:"원",
+  why:d=>{const c=d.chg??0, a=Math.abs(c);
+    const lv=a>=8?3:(a>=4?2:(a>=1?1:0));
+    const bars=`<span class="sig${c<0?' buyside':''}">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join("")}</span>`;
+    if(c>=1) return `환율 상승 → <b class="warn-t">외국인 매도 신호</b> ${bars} ${lv===3?"강":lv===2?"중":"약"}`;
+    if(c<=-1) return `환율 하락 → <b class="up">외국인 수급 우호</b> ${bars}`;
+    return `보합 — 외국인 수급 중립`;}},
+ {id:"vix", name:"VIX 공포지수", unit:"", type:"gauge", max:50,
+  zones:["안정","보통","경계","불안","공포"], cuts:[15,20,25,32],
+  why:d=>{const v=d.v??0;
+    if(v<15) return `시장 <b class="up">안정</b> 구간`;
+    if(v<20) return `평상 수준의 변동성`;
+    if(v<32) return `<b class="warn-t">불안</b> — 변동성 확대 구간`;
+    return `<b class="dn">공포</b> — 급락 동반 가능 구간`;}},
+ {id:"fng", name:"공포 & 탐욕 지수 (CNN)", unit:"", type:"gauge", max:100,
+  zones:["극단공포","공포","중립","탐욕","극단탐욕"], cuts:[25,45,55,75],
+  why:d=>{const v=d.v??50;
+    if(v<=25) return `<b class="up">극단적 공포</b> → 역발상 <b>매수</b> 참고 구간`;
+    if(v<45) return `공포 우위 — 저가 매수 관심 구간`;
+    if(v<=55) return `중립`;
+    if(v<75) return `탐욕 우위 — 추격 매수 주의`;
+    return `<b class="dn">극단적 탐욕</b> → <b>매도</b>·차익실현 참고 구간`;}},
+ {id:"btc", name:"비트코인 (BTC/USD)", unit:"$", fmt:v=>Number(v).toLocaleString("en-US"),
+  why:d=>{const c=d.chg??0;
+    if(c>=2) return `<b class="up">위험자산 선호 회복</b>의 선행 신호`;
+    if(c<=-2) return `<b class="warn-t">위험 회피</b> 심리 확산의 선행 신호`;
+    return `보합 — 위험선호 중립`;}},
+ {id:"futures", name:"미국 주가지수 선물", unit:"", type:"fut",
+  why:d=>{const a=((d.sp??0)+(d.nq??0))/2;
+    if(a>=0.3) return `<b class="up">상승</b> — 미 증시 개장 전 분위기 우호적`;
+    if(a<=-0.3) return `<b class="dn">하락</b> — 개장 전 위험 회피 분위기`;
+    return `보합 출발 예상`;}},
+ {id:"wti", name:"국제 유가 (WTI)", unit:"$",
+  why:d=>{const c=d.chg??0;
+    if(c>=3) return `<b class="warn-t">급등</b> — 기업 비용 부담·인플레 압력`;
+    if(c<=-3) return `<b class="dn">급락</b> — 경기침체 우려 신호일 수 있음`;
+    if(c>=1) return `상승 — 비용 압력 소폭 확대`;
+    if(c<=-1) return `하락 — 비용 부담 완화`;
+    return `보합`;}},
+ {id:"leaders", name:"글로벌 주도주 마감", unit:"", type:"lead",
+  why:d=>{const arr=d.list||[]; if(!arr.length) return "—";
+    const up=arr.filter(x=>x.chg>0).length;
+    if(up===arr.length) return `주도주 <b class="up">동반 상승</b> — 위험선호 유지`;
+    if(up===0) return `주도주 <b class="dn">동반 하락</b> — 시장 추세 약화 신호`;
+    return `혼조 — 종목별 차별화`;}},
+ {id:"cds", name:"한국 CDS 프리미엄 (5Y)", unit:"bp",
+  why:d=>{const v=d.v??0;
+    if(v<30) return `<b class="up">낮음</b> — 한국 신용도에 대한 외부 시선 안정적`;
+    if(v<=50) return `보통 — 평상 범위`;
+    if(v<=80) return `<b class="warn-t">경계</b> — 대외 불안이 한국물에 반영되는 중`;
+    return `<b class="dn">높음</b> — 국가 신용 위험 인식 뚜렷`;}},
+];
+
+function gauge(def,v){
+  const pos=Math.max(0,Math.min(100, v/def.max*100));
+  const cutLbls=[0,...def.cuts,def.max];
+  return `<div class="gauge">
+    <div class="gtrack"><i class="gz1"></i><i class="gz2"></i><i class="gz3"></i><i class="gz4"></i><i class="gz5"></i></div>
+    <div class="gneedle"><b style="left:${pos}%"></b></div>
+    <div class="glabels">${def.zones.map(z=>`<span>${z}</span>`).join("")}</div>
+  </div>`;
+}
+
+function renderInd(){
+  const g=$("indGrid");
+  if(!IND){ g.innerHTML=IND_DEFS.map(d=>`<div class="card"><div class="k">${d.name}</div>
+    <div class="v flat">—</div><div class="why flat">지표 불러오기를 누르면 표시됩니다</div></div>`).join(""); return; }
+  g.innerHTML=IND_DEFS.map(def=>{
+    const d=IND[def.id]||{};
+    let body="";
+    if(def.type==="gauge"){
+      const v=d.v;
+      body = v===undefined||v===null
+        ? `<div class="v flat">—</div>`
+        : `<div class="v">${Number(v).toFixed(def.id==="fng"?0:2)}</div>${gauge(def,v)}`;
+    }else if(def.type==="fut"){
+      body = (d.sp===undefined&&d.nq===undefined) ? `<div class="v flat">—</div>`
+        : `<div class="lead">
+             <span>S&P500 <b class="${cls3(d.sp??0)}">${sgn2(d.sp??0)}%</b></span>
+             <span>나스닥 <b class="${cls3(d.nq??0)}">${sgn2(d.nq??0)}%</b></span></div>`;
+    }else if(def.type==="lead"){
+      const arr=d.list||[];
+      body = !arr.length ? `<div class="v flat">—</div>`
+        : `<div class="lead">${arr.map(x=>
+            `<span>${esc(x.t)} <b class="${cls3(x.chg)}">${sgn2(x.chg)}%</b></span>`).join("")}</div>`;
+    }else{
+      const v=d.v;
+      body = v===undefined||v===null ? `<div class="v flat">—</div>`
+        : `<div class="v">${def.fmt?def.fmt(v):Number(v).toFixed(2)}<small>${def.unit}</small></div>`
+          +(d.chg!==undefined&&d.chg!==null
+            ?`<div class="chg ${cls3(d.chg)}">${sgn2(d.chg)}${def.id==="us10y"?"%p":def.id==="usdkrw"?"원":def.id==="wti"||def.id==="btc"?"%":""} (전일比)</div>`:"");
+    }
+    return `<div class="card"><div class="k">${def.name}</div>${body}
+      <div class="why">${def.why(d)}</div></div>`;
+  }).join("");
+}
+
+function indUrl(){
+  const feed=$("feedUrl").value.trim() || "";
+  if(!feed) return null;
+  // 피드 주소에서 파일명만 indicators.json 으로 교체
+  return feed.replace(/[^\/]+$/, "indicators.json");
+}
+let FLOWS=null;
+function flowUrl(){ const u=indUrl(); return u?u.replace(/[^\/]+$/,"flows.json"):null; }
+async function fetchFlows(){
+  const url=flowUrl(); if(!url) return null;
+  const res=await fetch(url,{cache:"no-store"});
+  if(!res.ok) return null;                    // 아직 없으면 조용히 건너뜀
+  return await res.json();
+}
+function renderFlows(){
+  const w=$("flowWrap"); if(!w) return;
+  if(!FLOWS){ w.innerHTML=""; return; }
+  const dt=String(FLOWS.date||"");
+  const dlbl=dt.length===8?`${dt.slice(4,6)}.${dt.slice(6,8)} 기준`:"";
+  const eok=v=>{const a=Math.abs(v); return (v<0?"−":"+")+(a>=10000?(a/10000).toFixed(2)+"조":a.toLocaleString("ko-KR",{maximumFractionDigits:0})+"억");};
+  const col=(rows,label,side)=>{
+    const total=rows.reduce((s,r)=>s+r.v,0);
+    return `<div class="fcol"><div class="fh"><span>${label}</span><span class="${side==="buy"?"up":"dn"}">${eok(total)}</span></div>
+      <div class="flist">${rows.map((r,i)=>
+        `<div class="frow"><span class="rk">${i+1}</span><span class="fn">${esc(r.n)}</span>
+         <span class="fv ${side==="buy"?"up":"dn"}">${eok(r.v)}</span></div>`).join("")||
+        '<div class="frow flat">데이터 없음</div>'}</div></div>`;
+  };
+  const sec=(key,title)=>{const d=FLOWS[key]; if(!d) return "";
+    return `<div class="flowsec"><h3>${title} <small>${dlbl} · 코스피+코스닥 · 억원</small></h3>
+      <div class="flowcols">${col(d.buy||[],"순매수 상위","buy")}${col(d.sell||[],"순매도 상위","sell")}</div></div>`;};
+  w.innerHTML = sec("foreign","외국인 순매매") + sec("inst","기관 순매매");
+}
+
+async function fetchIndicators(){
+  const url=indUrl();
+  if(!url) throw new Error("03 탭에서 피드 주소를 먼저 저장하세요");
+  const res=await fetch(url,{cache:"no-store"});
+  if(!res.ok) throw new Error(res.status===404?"indicators.json 이 아직 없습니다 — Actions 에서 '핵심 지표 수집'을 한 번 실행하세요":"HTTP "+res.status);
+  return await res.json();
+}
+$("indBtn").addEventListener("click",async()=>{
+  const b=$("indBtn"); b.disabled=true; b.textContent="불러오는 중…";
+  try{
+    const js=await fetchIndicators();
+    IND={...js, ts: js.generated_at ? Date.parse(js.generated_at) : Date.now()};
+    await store("ind:data",IND);
+    const fl=await fetchFlows();
+    if(fl){ FLOWS=fl; await store("ind:flows",FLOWS); }
+    renderInd(); renderFlows();
+    $("indStat").textContent="지표 기준 "+new Date(IND.ts).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" · 서버가 매시간 자동 갱신";
+  }catch(e){
+    $("indStat").innerHTML=`<span style="color:var(--warn)">${esc(e.message)}</span>`;
+  }
+  b.disabled=false; b.textContent="지표 불러오기";
+});
+
+(async()=>{
+  const saved=await store("ind:data");
+  if(saved&&typeof saved==="object"){ IND=saved; }
+  const savedF=await store("ind:flows");
+  if(savedF&&typeof savedF==="object"){ FLOWS=savedF; }
+  renderInd(); renderFlows();
+  // 피드 주소가 저장돼 있으면 열 때마다 자동 갱신
+  setTimeout(async()=>{
+    try{
+      const js=await fetchIndicators();
+      IND={...js, ts: js.generated_at ? Date.parse(js.generated_at) : Date.now()};
+      await store("ind:data",IND);
+      const fl=await fetchFlows();
+      if(fl){ FLOWS=fl; await store("ind:flows",FLOWS); }
+      renderInd(); renderFlows();
+      $("indStat").textContent="지표 기준 "+new Date(IND.ts).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" · 서버가 매시간 자동 갱신";
+    }catch(e){
+      if(IND) $("indStat").textContent="저장된 값 표시 중 — 버튼으로 다시 시도";
+    }
+  }, 800);
+})();
+
+/* ══════════════════ 탭 2 : 뉴스 ══════════════════ */
+const SEED=[
+ {c:"KR",t:"07.16",h:"한은, 3년 6개월 만에 기준금리 인상…연 2.75% 만장일치 결정",s:"뉴시스",w:3,u:"https://v.daum.net/v/20260716110353864"},
+ {c:"KR",t:"07.20",h:"한은 경제상황 평가…반도체 호조에 올해 성장세 확대 전망",s:"한국은행",w:3,u:"https://www.bok.or.kr/portal/main/main.do"},
+ {c:"KR",t:"07.13",h:"채권시장 “기준금리 종착지 연 3.5%”…긴축 사이클 개시 해석",s:"한국일보",w:2,u:"https://www.hankookilbo.com/news/article/A2026071311230003586"},
+ {c:"US",t:"07.23",h:"주간 실업수당 청구 18.7만건으로 급감…중동發 유가 급등에 증시 하락",s:"CNBC",w:3,u:"https://www.cnbc.com/2026/07/22/stock-market-today-live-updates.html"},
+ {c:"US",t:"07.10",h:"연준, 7월 통화정책보고서 의회 제출…물가안정 우선 기조 재확인",s:"Federal Reserve",w:3,u:"https://www.federalreserve.gov/monetarypolicy/files/20260710_mprfullreport.pdf"},
+ {c:"US",t:"07.24",h:"RBC “하반기 미국 경제 3대 리스크”…레저·숙박 고용 반락 지적",s:"RBC Economics",w:2,u:"https://www.rbc.com/en/economics/us-analysis/us-featured-analysis/july-executive-briefing-three-risks-facing-the-us-in-the-second-half-of-2026/"},
+ {c:"US",t:"07.01",h:"US Bank 7월 전망 “확장 국면이나 부문별 양극화 심화”",s:"U.S. Bank",w:1,u:"https://www.usbank.com/corporate-and-commercial-banking/insights/economy/outlook/monthly.html"},
+ {c:"JP",t:"07.24",h:"6월 근원 CPI 1.6%…3개월 만에 반등, BOJ 추가 인상 명분 확보",s:"Japan Times",w:3,u:"https://www.japantimes.co.jp/business/2026/07/24/economy/japan-inflation-picks-up-june/"},
+ {c:"JP",t:"07.02",h:"엔 약세·경기 견조…BOJ 조기 인상론, 10월 인상 확률 60% 상회",s:"Japan Times",w:3,u:"https://www.japantimes.co.jp/business/2026/07/02/economy/boj-early-rate-hike-prediction/"},
+ {c:"JP",t:"07.13",h:"BOJ 7월 전망보고서, 성장률 상향·근원물가 하향…정책금리 1% 동결 유력",s:"Reuters 인용",w:2,u:"https://finance.biggo.com/news/164d20be-199b-442e-92e8-06697768cead"},
+ {c:"TW",t:"07.17",h:"DBS·SC, 대만 올해 성장률 9.4~9.5% 유지…AI 수출이 견인",s:"Taipei Times",w:3,u:"https://www.taipeitimes.com/News/biz/archives/2026/07/17/2003860862"},
+ {c:"TW",t:"07.19",h:"TSMC, 애리조나에 1,000억달러 추가 투자…미국 누적 2,650억달러",s:"The Wire China",w:3,u:"https://www.thewirechina.com/2026/07/19/the-return-of-the-taiwan-tiger/"},
+ {c:"CN",t:"07.07",h:"세계은행 “중국 경제, 첨단기술 투자·수출로 연초 견조”…성장 리밸런싱 보고서",s:"World Bank",w:3,u:"https://www.worldbank.org/en/news/press-release/2026/07/07/rebalancing-growth-china-economic-update"},
+];
+const COUNTRIES=[
+ {c:"US",ko:"미국",src:"Reuters, Bloomberg, WSJ, CNBC, Federal Reserve, BLS, BEA"},
+ {c:"CN",ko:"중국",src:"Reuters, Bloomberg, Caixin, Xinhua, 국가통계국(NBS), 인민은행(PBoC)"},
+ {c:"JP",ko:"일본",src:"Nikkei, Japan Times, Reuters, 일본은행(BOJ), 총무성"},
+ {c:"KR",ko:"한국",src:"연합뉴스, 한국경제, 매일경제, 한국은행, 기획재정부, 통계청"},
+ {c:"TW",ko:"대만",src:"Focus Taiwan, Taipei Times, Reuters, 중앙은행(CBC), 재정부, DGBAS"},
+];
+let DATA=SEED.slice(), filter="ALL", onlyHi=false;
+
+function renderNews(){
+  const rows=DATA.filter(d=>filter==="ALL"||d.c===filter).filter(d=>!onlyHi||d.w>=3)
+    .sort((a,b)=>(b.w-a.w)||String(b.t).localeCompare(String(a.t)));
+  if(!rows.length){$("feed").innerHTML='<div class="empty">해당 조건의 헤드라인이 없습니다.</div>';return;}
+  $("feed").innerHTML=rows.map(d=>{
+    const meter=[1,2,3].map(i=>`<i class="${i<=d.w?"on":""}"></i>`).join("");
+    return `<a class="item" href="${esc(d.u)}" target="_blank" rel="noopener noreferrer">
+      <span class="spine"><span class="code">${esc(d.c)}</span><span class="time">${esc(d.t)}</span></span>
+      <span><span class="head">${esc(d.h)}</span>
+      <span class="meta"><span class="src">${esc(d.s)}</span> · 원문 열기 ↗</span></span>
+      <span class="meter ${d.w>=3?"hi":""}">${meter}</span></a>`;
+  }).join("");
+}
+document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
+  filter=b.dataset.f;document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderNews();}));
+$("onlyHi").addEventListener("change",e=>{onlyHi=e.target.checked;renderNews();});
+
+function nprompt(c){return `당신은 경제 뉴스 데스크입니다. 웹 검색으로 ${c.ko}(${c.c})의 최근 48시간 경제 뉴스를 조사하세요.
+허용 출처(이 범위 밖 제외): ${c.src}, 그리고 IMF·World Bank·OECD 등 국제기구.
+블로그·개인 투자 콘텐츠·광고성 매체·요약 수집 사이트는 제외합니다.
+시장 영향력이 큰 순서로 최대 5건. 우선순위: 통화정책·금리, 물가, 성장률, 고용, 무역, 환율, 대형 산업/기업.
+아래 JSON 배열만 출력하세요. 설명·코드펜스 없이 배열만.
+[{"h":"한국어 한 줄 헤드라인(45자 이내, 숫자 포함)","s":"출처 매체명","t":"MM.DD","u":"기사 원문 URL","w":1}]
+규칙: "u"는 검색 결과에 실제 등장한 URL 그대로. 지어내지 마세요. "w"는 중요도 1~3. 확실한 기사가 없으면 [].`;}
+
+async function fetchCountry(c){
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,
+      messages:[{role:"user",content:nprompt(c)}],
+      tools:[{type:"web_search_20250305",name:"web_search"}]})});
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  const data=await res.json();
+  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+  const m=text.replace(/```json|```/g,"").match(/\[[\s\S]*\]/); if(!m) return [];
+  let arr; try{arr=JSON.parse(m[0]);}catch(e){return [];}
+  return (Array.isArray(arr)?arr:[]).filter(x=>x&&x.h).map(x=>({
+    c:c.c,h:String(x.h).slice(0,80),s:x.s||"—",t:x.t||"",
+    w:Math.min(3,Math.max(1,Number(x.w)||1)),
+    u:(typeof x.u==="string"&&/^https?:\/\//.test(x.u))?x.u:"https://news.google.com/search?q="+encodeURIComponent(x.h)}));
+}
+$("btn").addEventListener("click",async()=>{
+  $("btn").disabled=true;
+  const pending=new Set(COUNTRIES.map(c=>c.c)), fresh=[], failed=[];
+  const tick=()=>{$("live").innerHTML=`<div class="loading">검색 중<span class="dot">…</span> 남은 국가: ${[...pending].join(" · ")||"없음"}</div>`;};
+  tick();
+  await Promise.all(COUNTRIES.map(async c=>{
+    try{const rows=await fetchCountry(c); rows.length?fresh.push(...rows):failed.push(c.c);}
+    catch(e){failed.push(c.c);}
+    pending.delete(c.c); if(fresh.length){DATA=fresh.slice();renderNews();} tick();
+  }));
+  if(fresh.length){
+    DATA=fresh; renderNews();
+    $("stamp").textContent="갱신 "+new Date().toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+    $("seednote").textContent="실시간 검색 결과입니다. 최근 48시간 기사 위주로 수집합니다.";
+    $("live").innerHTML=failed.length?`<div class="err">${failed.join(" · ")} 는 조건을 만족하는 기사를 찾지 못했습니다.</div>`:"";
+  }else{
+    $("live").innerHTML=`<div class="err">갱신 실패 — 이 버튼의 AI 검색은 Claude 앱에서 열었을 때만 동작합니다. 여기서는 저장된 헤드라인이 유지됩니다.</div>`;
+  }
+  $("btn").disabled=false;
+});
+renderNews();
+
+/* ══════════════════ 탭 3 : 국민연금 지분공시 (자동 수신) ══════════════════ */
+let BASE={};            // {정규화명: {name, rate, date}}
+let FEED_BASE=null;     // 피드가 제공한 기준값 (우선 적용)
+let FILINGS=[];
+let SEEN=new Set();
+let timer=null;
+
+const norm=s=>String(s||"").replace(/\(주\)|주식회사|㈜|\s+/g,"").trim();
+const numOf=s=>{if(typeof s==="number")return s;const m=String(s||"").replace(/,/g,"").match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):null;};
+const fmtDate=d=>{const s=String(d||"").replace(/\D/g,"");return s.length===8?`${s.slice(4,6)}.${s.slice(6,8)}`:String(d||"");};
+
+/* --- 피드 레코드 정규화 (키 이름이 달라도 흡수) --- */
+function pick(o,keys){for(const k of keys){if(o[k]!==undefined&&o[k]!=="")return o[k];}return "";}
+function normRec(o){
+  return {
+    corp: String(pick(o,["corp","corp_name","공시대상회사","회사명","종목명","name"])).trim(),
+    rpt:  String(pick(o,["report","report_nm","보고서명","rpt"])).trim(),
+    flr:  String(pick(o,["filer","flr_nm","제출인","보고자","repror"])).trim(),
+    dt:   String(pick(o,["date","rcept_dt","접수일자","접수일"])).trim(),
+    no:   String(pick(o,["rcept_no","접수번호","no","rcp_no"])).replace(/\D/g,""),
+    rate: numOf(pick(o,["rate","stkrt","보유비율","지분율"])),
+    qty:  numOf(pick(o,["qty","stkqy","보유주식수","주식수"])),
+    base: numOf(pick(o,["base","base_rate","기준비율"])),
+    prev: numOf(pick(o,["prev","직전비율"])),
+    prevDt: String(pick(o,["prev_date","직전일자"])).trim(),
+    verdict: String(pick(o,["verdict","판정"])).trim(),
+  };
+}
+function isTarget(r){
+  const blob=[r.flr,r.rpt].join(" ");
+  return (/국민연금/.test(blob)||!r.flr) && (/대량보유/.test(blob)||!r.rpt);
+}
+
+/* --- 피드 수신 --- */
+async function pullFeed(url,quiet){
+  const stat=$("feedStat");
+  if(!url){ if(!quiet) stat.textContent="주소를 먼저 넣고 저장하세요."; return; }
+  stat.textContent="확인 중…";
+  try{
+    const res=await fetch(url,{cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const js=await res.json();
+    const list=Array.isArray(js)?js:(js.filings||js.list||js.data||[]);
+    if(js && js.baseline && typeof js.baseline==="object"){
+      FEED_BASE={}; for(const k in js.baseline){
+        const v=js.baseline[k]; const rate=typeof v==="object"?numOf(v.rate):numOf(v);
+        if(rate!==null) FEED_BASE[norm(k)]={name:k,rate,date:js.baseline_label||"피드"};
+      }
+    }
+    const recs=list.map(normRec).filter(r=>r.corp).filter(isTarget);
+    setFilings(recs);
+    const gen=js.generated_at?new Date(js.generated_at):new Date();
+    stat.innerHTML=`연결됨 · 피드 생성 ${gen.toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})} · ${recs.length}건 수신`;
+  }catch(e){
+    stat.innerHTML=`<span style="color:var(--warn)">피드를 읽지 못했습니다 (${esc(e.message)}). 주소·공개 여부·CORS 헤더를 확인하세요.</span>`;
+  }
+}
+function schedule(){
+  if(timer) clearInterval(timer);
+  const ms=parseInt($("poll").value,10);
+  if(ms>0) timer=setInterval(()=>pullFeed($("feedUrl").value.trim(),true),ms);
+}
+$("saveFeed").addEventListener("click",async()=>{
+  const url=$("feedUrl").value.trim();
+  await store("nps:url",url); await store("nps:poll",$("poll").value);
+  schedule(); pullFeed(url);
+});
+$("pullNow").addEventListener("click",()=>pullFeed($("feedUrl").value.trim()));
+$("poll").addEventListener("change",async()=>{await store("nps:poll",$("poll").value);schedule();});
+
+/* --- 검색 기반 간이 확인 (피드 없이) --- */
+$("searchMode").addEventListener("click",async()=>{
+  const b=$("searchMode"); b.disabled=true; b.textContent="검색 중…";
+  $("feedStat").textContent="웹 검색으로 최근 공시를 확인하는 중입니다…";
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,
+        messages:[{role:"user",content:
+`웹 검색으로 최근 2주간 국민연금공단이 제출한 '주식등의 대량보유상황보고서'(DART 공시)를 찾으세요.
+dart.fss.or.kr 공시검색 결과와 이를 보도한 경제지(연합뉴스·한국경제·매일경제 등)를 근거로 삼으세요.
+아래 JSON 배열만 출력하세요. 설명·코드펜스 없이 배열만.
+[{"corp":"종목명","date":"YYYYMMDD","rate":7.41,"rcept_no":"20260727000123","report":"주식등의대량보유상황보고서"}]
+규칙: rate는 이번 보고의 보유비율(%). rcept_no는 실제 확인된 14자리 접수번호만 넣고, 모르면 빈 문자열.
+확실한 건이 없으면 [] 만 출력.`}],
+        tools:[{type:"web_search_20250305",name:"web_search"}]})});
+    const data=await res.json();
+    const text=(data.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\n");
+    const m=text.replace(/```json|```/g,"").match(/\[[\s\S]*\]/);
+    const arr=m?JSON.parse(m[0]):[];
+    const recs=arr.map(normRec).filter(r=>r.corp);
+    if(recs.length){ setFilings(recs);
+      $("feedStat").innerHTML='검색 기반 결과입니다. 비율·접수번호가 누락될 수 있으니 <b>참고용</b>으로만 쓰세요.'; }
+    else $("feedStat").textContent="검색으로는 확인된 공시가 없습니다.";
+  }catch(e){ $("feedStat").innerHTML=`<span style="color:var(--warn)">검색 확인 실패: ${esc(e.message)}</span>`; }
+  b.disabled=false; b.textContent="검색으로 간이 확인";
+});
+
+/* --- 파일 백업 경로 --- */
+$("pickFile").addEventListener("click",()=>$("file").click());
+$("file").addEventListener("change",ev=>{const f=ev.target.files[0];if(f)readFile(f);});
+function parseDelim(text){
+  const first=text.split("\n")[0];
+  const d=(first.match(/\t/g)||[]).length>=(first.match(/,/g)||[]).length?"\t":",";
+  const rows=[];let cell="",row=[],q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){ if(ch==='"'&&text[i+1]==='"'){cell+='"';i++;} else if(ch==='"'){q=false;} else cell+=ch; }
+    else if(ch==='"'){q=true;} else if(ch===d){row.push(cell);cell="";}
+    else if(ch==="\n"){row.push(cell);rows.push(row);row=[];cell="";}
+    else if(ch!=="\r"){cell+=ch;}}
+  row.push(cell); if(row.some(c=>String(c).trim()))rows.push(row);
+  return rows.filter(r=>r.some(c=>String(c).trim()));
+}
+function rowsToRecs(rows){
+  if(!rows.length)return[];
+  const hdr=rows[0].map(h=>String(h).trim());
+  const objs=rows.slice(1).map(r=>{const o={};hdr.forEach((h,i)=>o[h]=r[i]);return o;});
+  return objs.map(normRec).filter(r=>r.corp).filter(isTarget);
+}
+function readFile(f){
+  const isXl=/\.xlsx?$/i.test(f.name), isJson=/\.json$/i.test(f.name);
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      let recs;
+      if(isJson){ const js=JSON.parse(new TextDecoder("utf-8").decode(rd.result));
+        recs=(Array.isArray(js)?js:(js.filings||[])).map(normRec).filter(r=>r.corp); }
+      else if(isXl&&window.XLSX){ const wb=XLSX.read(new Uint8Array(rd.result),{type:"array"});
+        recs=rowsToRecs(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false})); }
+      else recs=rowsToRecs(parseDelim(new TextDecoder("utf-8").decode(rd.result)));
+      if(!recs.length){ $("feedStat").innerHTML='<span style="color:var(--warn)">국민연금 대량보유 공시 행을 찾지 못했습니다.</span>'; return; }
+      setFilings(recs); $("feedStat").textContent="파일에서 "+recs.length+"건을 읽었습니다.";
+    }catch(e){ $("feedStat").innerHTML=`<span style="color:var(--warn)">파일 오류: ${esc(e.message)}</span>`; }
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* --- 상태 반영 --- */
+function setFilings(list){
+  const before=SEEN;
+  FILINGS=list;
+  FILINGS.forEach(f=>{f.isNew=f.no?!before.has(f.no):true;});
+  $("s-fil").textContent=FILINGS.length;
+  $("s-new").textContent=FILINGS.filter(f=>f.isNew).length;
+  $("s-when").textContent=new Date().toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  FILINGS.forEach(f=>{if(f.no)SEEN.add(f.no);});
+  store("nps:seen",[...SEEN].slice(-4000));
+  runReport();
+}
+
+/* --- 기준값 --- */
+function activeBase(){ return (FEED_BASE&&Object.keys(FEED_BASE).length)?FEED_BASE:BASE; }
+function drawBase(){
+  const B=activeBase(), keys=Object.keys(B);
+  $("s-base").textContent=keys.length;
+  $("btbl").innerHTML=keys.length
+    ? "<tr><th>종목</th><th>기준 비율</th><th></th></tr>"+keys.sort((a,b)=>B[a].name.localeCompare(B[b].name))
+        .map(k=>`<tr><td>${esc(B[k].name)}</td><td>${B[k].rate.toFixed(2)}%</td>
+          <td>${B===BASE?`<button class="x" data-k="${esc(k)}" title="삭제">×</button>`:""}</td></tr>`).join("")
+    : "";
+  $("btbl").querySelectorAll(".x").forEach(b=>b.addEventListener("click",()=>{
+    delete BASE[b.dataset.k];store("nps:base",BASE);drawBase();runReport();}));
+}
+$("addBase").addEventListener("click",()=>{
+  let n=0;
+  for(const l of $("basein").value.split("\n").map(x=>x.trim()).filter(Boolean)){
+    const p=l.split(/[,\t]/); if(p.length<2)continue;
+    const name=p[0].trim(), rate=numOf(p[1]);
+    if(!name||rate===null)continue;
+    BASE[norm(name)]={name,rate,date:(p[2]||"1Q").trim()}; n++;
+  }
+  if(n){$("basein").value="";store("nps:base",BASE);drawBase();runReport();}
+});
+$("wipeBase").addEventListener("click",()=>{BASE={};store("nps:base",BASE);drawBase();runReport();});
+$("expBase").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(activeBase(),null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="nps-baseline-1Q.json";a.click();URL.revokeObjectURL(a.href);
+});
+
+/* --- 판정 민감도 -------------------------------------------------
+   임계치의 기준점: 자본시장법 §147 변동보고 의무 = 1%p.
+   보고서 존재 자체가 직전 보고 대비 1%p 이상 이동을 뜻하므로,
+   1%p 미만은 매매가 아닌 분모 변동/목적 변경일 가능성이 높다.
+   상대 프리셋은 관측 표본(n=126, 보유 3.68~13.32%, 중위 6.69%)에서
+   1%p가 상대 7.51~27.17%, 중위 14.97%에 대응한다는 사실에 맞췄다.
+------------------------------------------------------------------ */
+const PRESETS={
+  abs:{
+    all:  {mild:0.01, strong:1.00, name:"아주 예민하게",
+           why:"0.01%p 만 움직여도 표시. 분모 변동·목적 변경까지 전부 노출."},
+    law:  {mild:1.00, strong:2.00, name:"조금 예민하게",
+           why:"법정 변동보고 기준 1%p 부터 매수/매도. 2차는 2%p."},
+    std:  {mild:1.00, strong:3.00, name:"보통",
+           why:"1%p 부터 매수/매도, 3%p 부터 적극매수/당장매도. 권장값."},
+    major:{mild:2.00, strong:5.00, name:"큰 변화만",
+           why:"2%p 이상만 신호로. 5%p 면 보유 5% 선 이탈이 가능한 폭."},
+  },
+  rel:{
+    fine: {mild:7.51,  strong:20.00, name:"아주 예민하게",
+           why:"보유 대비 7.51%(대형 보유의 1%p)부터 매수/매도."},
+    std:  {mild:14.97, strong:35.00, name:"보통",
+           why:"보유 대비 14.97%(중간 보유의 1%p)부터 매수/매도. 권장값."},
+    coarse:{mild:27.17,strong:50.00, name:"큰 변화만",
+           why:"보유 대비 27.17%(소형 보유의 1%p) 이상만 신호로."},
+  }
+};
+const UNIT={abs:"%p", rel:"%"};
+
+/* 0.01 단위 정수로 환산 — 부동소수점 오차 제거 (엑셀 재현성) */
+const bp = x => Math.round((Number(x)||0)*100);
+
+function metric(){ return $("metric").value; }
+function rebuildTier(sel){
+  const m=metric(), P=PRESETS[m];
+  $("tier").innerHTML=Object.keys(P).map(k=>
+    `<option value="${k}" title="${P[k].why}">${P[k].name}</option>`).join("")
+    +`<option value="custom" title="기준이 되는 변화폭을 직접 넣습니다">직접 입력</option>`;
+  $("tier").value = (sel && (P[sel]||sel==="custom")) ? sel : "std";
+}
+function tierValues(){
+  const m=metric(), k=$("tier").value;
+  if(k!=="custom"){ const p=PRESETS[m][k]; return {...p, label:p.name, metric:m}; }
+  const mild=Math.abs(Number($("thrMild").value)||0);
+  let strong=Math.abs(Number($("thrStrong").value)||0);
+  if(bp(strong)<bp(mild)) strong=mild;      // 2차가 1차보다 작으면 같게 맞춘다
+  return {mild,strong,label:"직접 입력",name:"직접 입력",metric:m};
+}
+function syncTierUI(){
+  const custom=$("tier").value==="custom";
+  $("customBox").classList.toggle("on",custom);
+  if(!custom){ const p=PRESETS[metric()][$("tier").value];
+    $("thrMild").value=p.mild.toFixed(2); $("thrStrong").value=p.strong.toFixed(2); }
+  const t=tierValues(), u=UNIT[t.metric];
+  const f=x=>x.toFixed(2);
+  $("thrOut").innerHTML=`<b>±${f(t.mild)}${u}</b> 넘으면 매수·매도, <b>±${f(t.strong)}${u}</b> 넘으면 적극·당장`;
+  $("tk1").textContent="−"+f(t.strong);
+  $("tk2").textContent="−"+f(t.mild);
+  $("tk3").textContent="+"+f(t.mild);
+  $("tk4").textContent="+"+f(t.strong)+u;
+  const sel=$("tier").selectedOptions[0];
+  $("tier").title = sel ? sel.title : "";
+}
+
+/* 원본 보존: 반올림하지 않은 두 값을 모두 계산해 함께 보여준다 */
+function measure(cur,base){
+  const dBp = bp(cur)-bp(base);                       // 절대 증감, 0.01%p 단위
+  const rBp = bp(base)!==0 ? Math.round(dBp*10000/bp(base)) : null; // 상대 증감, 0.01% 단위
+  return {dBp,rBp};
+}
+function classify(m,t){
+  const val = t.metric==="abs" ? m.dBp : m.rBp;
+  if(val===null) return ["확인필요","v-hold"];
+  const mild=bp(t.mild), strong=bp(t.strong);
+  if(val>= strong) return ["적극매수","v-sbuy"];
+  if(val>= mild)   return ["매수","v-buy"];
+  if(val<=-strong) return ["당장매도","v-ssell"];
+  if(val<=-mild)   return ["매도","v-sell"];
+  return ["유지","v-hold"];
+}
+
+/* --- 리포트 --- */
+let LAST_TXT="";
+function runReport(){
+  const t=tierValues();
+  const B=activeBase(), rep=$("rep");
+  drawBase();
+  if(!FILINGS.length){
+    rep.innerHTML='<div class="empty">피드 주소를 저장하면 이 탭을 열 때마다 자동으로 공시를 받아 판정합니다.<br>'+
+      '아직 받은 공시가 없습니다.</div>'; LAST_TXT=""; return;
+  }
+  const show=$("allRows").checked?FILINGS:FILINGS.filter(f=>f.isNew);
+  if(!show.length){
+    rep.innerHTML='<div class="empty">새 공시 없음 — 수신한 '+FILINGS.length+'건은 모두 이전에 확인한 접수번호입니다.</div>';
+    LAST_TXT=""; return;
+  }
+  const rows=show.map(f=>{
+    const b = f.base!==null&&f.base!==undefined ? {rate:f.base,name:f.corp} : B[norm(f.corp)];
+    const cur=f.rate;
+    let v,cls,m={dBp:null,rBp:null};
+    if(cur===null){v="확인필요";cls="v-hold";}
+    else if(!b){ v = cur===0?"청산":"신규"; cls = cur===0?"v-exit":"v-new"; }
+    else{ m=measure(cur,b.rate);
+      if(cur===0){v="청산";cls="v-exit";}
+      else [v,cls]=classify(m,t); }
+    const key = t.metric==="abs" ? m.dBp : m.rBp;
+    return {f,b,cur,v,cls,m,key};
+  }).sort((a,b)=>Math.abs(b.key??0)-Math.abs(a.key??0));
+
+  const sgn=n=>(n>0?"+":"");
+  rep.innerHTML=rows.map(r=>{
+    const url=r.f.no?`https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${r.f.no}`
+                    :`https://dart.fss.or.kr/dsab007/main.do?option=corp`;
+    const k=r.key;
+    const dcls=(k===null||k===0)?"d-flat":(k>0?"d-up":"d-dn");
+    const abs = r.m.dBp===null?"—":sgn(r.m.dBp)+(r.m.dBp/100).toFixed(2)+"%p";
+    const rel = r.m.rBp===null?"—":sgn(r.m.rBp)+(r.m.rBp/100).toFixed(2)+"%";
+    const main = t.metric==="abs"?abs:rel, sub = t.metric==="abs"?rel:abs;
+    const from=r.b?r.b.rate.toFixed(2)+"%":"—";
+    const to=r.cur===null?"?":r.cur.toFixed(2)+"%";
+    const qty=r.f.qty?Number(r.f.qty).toLocaleString("ko-KR")+"주":"";
+    return `<a class="rrow" href="${url}" target="_blank" rel="noopener noreferrer">
+      <span class="nm"><b>${esc(r.f.corp)}${r.f.isNew?'<span class="newtag">NEW</span>':''}</b>
+        <span>${esc(fmtDate(r.f.dt))} · ${esc(r.f.rpt||"대량보유상황보고서")}${qty?" · "+qty:""}</span></span>
+      <span class="bars">기준 <b>${from}</b> → 현재 <b>${to}</b>${
+        r.f.prev!==null&&r.f.prev!==undefined
+        ?`<span class="prevline">직전 ${r.f.prev.toFixed(2)}% (${esc(fmtDate(r.f.prevDt))}) <b class="${(r.cur??0)>r.f.prev?"d-up":((r.cur??0)<r.f.prev?"d-dn":"")}">${(()=>{const d=(bp(r.cur??0)-bp(r.f.prev))/100;return (d>0?"+":"")+d.toFixed(2);})()}%p</b></span>`
+        :`<span class="prevline flat">직전 공시 없음</span>`}</span>
+      <span class="delta ${dcls}">${main}<span class="sub">${sub}</span></span>
+      <span class="verdict ${r.cls}">${r.v}</span></a>`;
+  }).join("");
+
+  LAST_TXT="국민연금 대량보유 변동 리포트 · "+new Date().toLocaleDateString("ko-KR")+
+    "\n측정 "+(t.metric==="abs"?"절대(%p)":"상대(%)")+" · "+t.label+
+    "\n종목\t판정\t기준\t현재\t절대(%p)\t상대(%)\t직전\t직전일\t직전대비(%p)\t보유주식수\t접수일\n"+
+    rows.map(r=>[r.f.corp, r.v,
+      r.b?r.b.rate.toFixed(2):"", r.cur===null?"":r.cur.toFixed(2),
+      r.m.dBp===null?"":(r.m.dBp/100).toFixed(2),
+      r.m.rBp===null?"":(r.m.rBp/100).toFixed(2),
+      r.f.prev??"", fmtDate(r.f.prevDt||""),
+      (r.f.prev!==null&&r.f.prev!==undefined&&r.cur!==null)?((bp(r.cur)-bp(r.f.prev))/100).toFixed(2):"",
+      r.f.qty??"", fmtDate(r.f.dt)].join("\t")).join("\n");
+}
+$("metric").addEventListener("change",()=>{
+  rebuildTier(); syncTierUI(); store("nps:metric",metric()); store("nps:tier",$("tier").value); runReport();});
+$("tier").addEventListener("change",()=>{syncTierUI();store("nps:tier",$("tier").value);runReport();});
+["thrMild","thrStrong"].forEach(id=>$(id).addEventListener("change",()=>{
+  store("nps:custom",{mild:$("thrMild").value,strong:$("thrStrong").value});
+  syncTierUI(); runReport();}));
+$("allRows").addEventListener("change",runReport);
+$("copyRep").addEventListener("click",async()=>{
+  const b=$("copyRep");
+  if(!LAST_TXT){b.textContent="복사할 내용 없음";setTimeout(()=>b.textContent="리포트 복사",1400);return;}
+  try{await navigator.clipboard.writeText(LAST_TXT);b.textContent="복사됨";}
+  catch(e){b.textContent="복사 실패";}
+  setTimeout(()=>b.textContent="리포트 복사",1400);
+});
+
+/* --- 시작 시 복원 + 자동 수신 --- */
+(async()=>{
+  const b=await store("nps:base"); if(b&&typeof b==="object")BASE=b;
+  const s=await store("nps:seen"); if(Array.isArray(s))SEEN=new Set(s);
+  const p=await store("nps:poll"); if(p)$("poll").value=p;
+  const mk=await store("nps:metric"); if(mk)$("metric").value=mk;
+  const tk=await store("nps:tier");
+  rebuildTier(tk||undefined);
+  const tc=await store("nps:custom"); if(tc){$("thrMild").value=tc.mild;$("thrStrong").value=tc.strong;}
+  syncTierUI();
+  const u=await store("nps:url");
+  drawBase(); runReport();
+  if(u){ $("feedUrl").value=u; schedule(); pullFeed(u,true); }
+})();
+</script>
