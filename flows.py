@@ -24,10 +24,17 @@ import requests
 
 KST = timezone(timedelta(hours=9))
 OUT = "flows.json"
-URL = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+URLS = (
+    "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd",
+    "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd",
+)
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) economic-wire/1.0",
-    "Referer": "http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd",
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"),
+    "Referer": "https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020304",
+    "Origin": "https://data.krx.co.kr",
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "X-Requested-With": "XMLHttpRequest",
 }
 INVESTORS = {"foreign": "9000", "inst": "7050"}   # 외국인 / 기관합계
 MARKETS = ("STK", "KSQ")                          # 코스피 / 코스닥
@@ -53,13 +60,22 @@ def krx_rows(trd_dd: str, invst: str, mkt: str) -> list:
         "money": "1",
         "csvxls_isNo": "false",
     }
-    r = requests.post(URL, data=data, headers=HEADERS, timeout=25)
-    r.raise_for_status()
-    js = r.json()
-    for key in ("output", "OutBlock_1", "block1"):
-        if isinstance(js.get(key), list):
-            return js[key]
-    return []
+    last_err = None
+    for url in URLS:
+        try:
+            r = requests.post(url, data=data, headers=HEADERS, timeout=25)
+            r.raise_for_status()
+            js = r.json()
+            for key in ("output", "OutBlock_1", "block1"):
+                if isinstance(js.get(key), list):
+                    print(f"    - {mkt}/{invst}: {len(js[key])}행 수신")
+                    return js[key]
+            print(f"    - {mkt}/{invst}: 응답에 목록 없음 · 키={list(js.keys())[:6]}")
+            return []
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            print(f"    - {mkt}/{invst} @ {url.split('/')[2]}: 실패 ({e})", file=sys.stderr)
+    raise RuntimeError(f"KRX 접속 불가: {last_err}")
 
 
 def pick(row: dict, *names):
@@ -83,10 +99,8 @@ def collect_day(trd_dd: str) -> dict | None:
                 netv = num(pick(row, "NETBID_TRDVAL", "NETBID_TRD_VAL"))
                 if not name or netv is None:
                     continue
-                # 같은 종목이 두 시장에 있을 일은 없지만, 방어적으로 합산
-                if code in merged:
-                    merged[code]["raw"] += netv
-                else:
+                # 같은 종목이 중복 수신되면 첫 값만 사용 (이중 합산 방지)
+                if code not in merged:
                     merged[code] = {"n": name, "raw": netv}
         if not merged:
             return None
@@ -113,8 +127,13 @@ def main() -> int:
         print(f"  · {trd_dd} 시도")
         try:
             day = collect_day(trd_dd)
+        except RuntimeError as e:              # 접속 자체가 안 되는 경우 — 반복 무의미
+            print(f"  ! {e}", file=sys.stderr)
+            print("  ! GitHub Actions(해외 IP)에서 KRX 가 차단됐을 수 있습니다. "
+                  "이 로그를 그대로 공유해 주세요.")
+            return 0
         except Exception as e:                 # noqa: BLE001
-            print(f"  ! KRX 요청 실패: {e}", file=sys.stderr)
+            print(f"  ! 수집 오류: {e}", file=sys.stderr)
             day = None
         if day:
             payload = {
