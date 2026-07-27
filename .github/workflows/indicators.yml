@@ -31,6 +31,8 @@ jobs:
           git config user.name  "ind-bot"
           git config user.email "ind-bot@users.noreply.github.com"
           git pull --rebase
-          git add indicators.json flows.json
+          for f in indicators.json flows.json; do
+            [ -f "$f" ] && git add "$f"
+          done
           git diff --staged --quiet || git commit -m "지표 갱신 $(date -u +'%Y-%m-%d %H:%M')"
           git push
