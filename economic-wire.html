@@ -670,9 +670,9 @@ const COUNTRIES=[
  {c:"KR",ko:"한국",src:"연합뉴스, 한국경제, 매일경제, 한국은행, 기획재정부, 통계청"},
  {c:"TW",ko:"대만",src:"Focus Taiwan, Taipei Times, Reuters, 중앙은행(CBC), 재정부, DGBAS"},
 ];
+let newsQ="";
 let DATA=SEED.slice(), filter="ALL", onlyHi=false;
 
-let newsQ="";
 function qTokens(){ return newsQ.split(/[,\s]+/).map(t=>t.trim()).filter(Boolean); }
 function hlight(text,tokens){
   let out=esc(text);
