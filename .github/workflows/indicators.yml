@@ -24,6 +24,9 @@ jobs:
         run: python indicators.py
 
       - name: 외국인/기관 순매매 수집
+        env:
+          KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
         run: python flows.py
 
       - name: 헤드라인 수집
