@@ -33,7 +33,13 @@ jobs:
         run: |
           git config user.name  "nps-bot"
           git config user.email "nps-bot@users.noreply.github.com"
-          git pull --rebase
-          git add nps-latest.json nps-history.json
-          git diff --staged --quiet || git commit -m "공시 갱신 $(date -u +'%Y-%m-%d %H:%M')"
-          git push
+          for f in nps-latest.json nps-history.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          if git diff --staged --quiet; then
+            echo "변경 없음 — 커밋 생략"
+          else
+            git commit -m "공시 갱신 $(date -u +'%Y-%m-%d %H:%M')"
+            git pull --rebase
+            git push
+          fi
