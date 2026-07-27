@@ -1039,13 +1039,17 @@ function runReport(){
     const b = f.base!==null&&f.base!==undefined ? {rate:f.base,name:f.corp} : B[norm(f.corp)];
     const cur=f.rate;
     let v,cls,m={dBp:null,rBp:null};
+    // 직전 공시가 있으면 그걸 기준으로 판정한다 (실제 매매 신호),
+    // 없으면(첫 관측) 기준값(baseline) 대비로 근사 판정한다.
+    const hasPrev = f.prev!==null && f.prev!==undefined;
+    const refRate = hasPrev ? f.prev : (b ? b.rate : null);
     if(cur===null){v="확인필요";cls="v-hold";}
-    else if(!b){ v = cur===0?"청산":"신규"; cls = cur===0?"v-exit":"v-new"; }
-    else{ m=measure(cur,b.rate);
+    else if(refRate===null||refRate===undefined){ v = cur===0?"청산":"신규"; cls = cur===0?"v-exit":"v-new"; }
+    else{ m=measure(cur,refRate);
       if(cur===0){v="청산";cls="v-exit";}
       else [v,cls]=classify(m,t); }
     const key = t.metric==="abs" ? m.dBp : m.rBp;
-    return {f,b,cur,v,cls,m,key};
+    return {f,b,cur,v,cls,m,key,hasPrev};
   }).sort((a,b)=>Math.abs(b.key??0)-Math.abs(a.key??0));
 
   const sgn=n=>(n>0?"+":"");
@@ -1068,7 +1072,7 @@ function runReport(){
         ?`<span class="prevline">직전 ${r.f.prev.toFixed(2)}% (${esc(fmtDate(r.f.prevDt))}) <b class="${(r.cur??0)>r.f.prev?"d-up":((r.cur??0)<r.f.prev?"d-dn":"")}">${(()=>{const d=(bp(r.cur??0)-bp(r.f.prev))/100;return (d>0?"+":"")+d.toFixed(2);})()}%p</b></span>`
         :`<span class="prevline flat">직전 공시 없음</span>`}</span>
       <span class="delta ${dcls}">${main}<span class="sub">${sub}</span></span>
-      <span class="verdict ${r.cls}">${r.v}</span></a>`;
+      <span class="verdict ${r.cls}" title="${r.hasPrev?'직전 공시 대비 판정':'기준값 대비 판정(직전 공시 없음)'}">${r.v}</span></a>`;
   }).join("");
 
   LAST_TXT="국민연금 대량보유 변동 리포트 · "+new Date().toLocaleDateString("ko-KR")+
