@@ -108,9 +108,16 @@
   .custom{display:none;gap:6px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
   .custom.on{display:flex}
   .custom .num{width:60px}
+  .nq{display:block;width:100%;max-width:420px;margin:10px 0 2px;padding:8px 12px;
+      font:inherit;font-size:12.5px;background:var(--card);border:1px solid var(--rule);
+      border-radius:3px;color:var(--ink)}
+  .nq:focus{outline:none;border-color:var(--ink)}
+  .head mark{background:none;color:inherit;font-weight:800;border-bottom:2px solid var(--warn);padding:0}
+  .qinfo{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:6px 0 0}
   .indgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
   .card{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:14px 16px 13px}
   .card .k{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .card .kd{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.5;word-break:keep-all}
   .card .v{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.02em;margin-top:7px;line-height:1.1}
   .card .v small{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
   .card .chg{font-family:var(--mono);font-size:11.5px;margin-top:4px}
@@ -137,7 +144,9 @@
   @media (max-width:720px){ .indgrid{grid-template-columns:1fr} }
   .flowsec{background:var(--card);border:1px solid var(--rule);border-radius:3px;
            padding:14px 16px;margin-top:14px}
+  #flowWrap+.indgrid{margin-top:14px}
   .flowsec h3{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
+  .fempty{font-size:12px;color:var(--muted);padding:14px 2px 4px;line-height:1.6;word-break:keep-all}
   .flowsec h3 small{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:400}
   .flowcols{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-top:11px}
   .fcol .fh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);
@@ -249,8 +258,8 @@
       <span class="spacer"></span>
       <button class="btn" id="indBtn">지표 불러오기</button>
     </div>
-    <div class="indgrid" id="indGrid"></div>
     <div id="flowWrap"></div>
+    <div class="indgrid" id="indGrid"></div>
     <div class="note">
       값은 수집 서버가 <b>매시간 자동 갱신</b>하며, 이 페이지가 GitHub Pages 에 있으면
       주소 설정 없이 같은 저장소의 데이터를 자동으로 읽습니다. 출처: 야후 파이낸스 공개 시세,
@@ -277,7 +286,8 @@
     <div class="note">
       출처는 중앙은행·통계기관·통신사(Reuters·Bloomberg·Nikkei·연합뉴스 등) 및 주요 경제지로 제한합니다.<br>
       헤드라인을 누르면 원문 기사가 새 탭에서 열립니다. 중요도는 ■ 1~3단계.<br>
-      <span id="seednote">아래는 초기 스냅샷입니다. “최신으로 갱신”을 누르면 실시간 검색으로 다시 채웁니다.</span>
+      <input type="search" id="newsQ" class="nq" placeholder="키워드 검색 — 예: AI, 로봇, 반도체 (쉼표로 여러 개)">
+      <span id="seednote">아래는 초기 스냅샷입니다. 수집 서버가 준비되면 자동으로 최신 헤드라인으로 바뀝니다.</span>
     </div>
   </section>
 
@@ -413,6 +423,7 @@ function selectTab(t){
 }
 TABS.forEach(([t])=>$(t).addEventListener("click",()=>selectTab(t)));
 selectTab("t-ind");
+renderNews(); loadNews(true);
 
 /* ══════════════════ 탭 1 : 핵심 지표 ══════════════════ */
 let IND = null;   // {ts, us10y:{v,chg}, ...}
@@ -423,68 +434,77 @@ const cls3=n=>n>0.0001?"up":(n<-0.0001?"dn":"flat");
 /* 해석은 전부 로컬 계산 — 검색 결과에는 숫자만 요구한다 */
 const IND_DEFS=[
  {id:"us10y", name:"미국 10년물 국채 금리", unit:"%",
-  why:d=>{const c=d.chg??0;
-    if(c>=0.03) return `<b class="warn-t">금리 상승</b> → 주식·부동산에 하락 압력`;
-    if(c<=-0.03) return `<b class="up">금리 하락</b> → 주식·부동산에 우호적`;
-    return `보합 — 금리발 압력 크지 않음`;}},
+  desc:"전 세계 장기금리의 기준점 — 주식·부동산 할인율의 뿌리",
+  why:d=>{const v=d.v??0,c=d.chg??0;
+    const lv=v>=4.5?'금리 <b class="warn-t">고공권(4.5%↑)</b>':v>=3.5?'중립~긴축 구간(3.5~4.5%)':'<b class="up">완화 구간(3.5%↓)</b>';
+    const mv=c>=0.03?' · 오늘 상승 → 주식·부동산에 하락 압력':c<=-0.03?' · 오늘 하락 → 위험자산에 우호적':' · 오늘 보합';
+    return lv+mv;}},
  {id:"dxy", name:"달러 인덱스 (DXY)", unit:"",
-  why:d=>{const c=d.chg??0;
-    if(c>=0.3) return `<b class="warn-t">달러 강세</b> → 신흥국·원화 자산에서 자금 이탈 압력`;
-    if(c<=-0.3) return `<b class="up">달러 약세</b> → 위험자산에 우호적`;
-    return `보합`;}},
+  desc:"주요 6개 통화 대비 달러 가치 (100=기준선)",
+  why:d=>{const v=d.v??0,c=d.chg??0;
+    const lv=v>=105?'달러 <b class="warn-t">강세권(105↑)</b> — 신흥국 자금 이탈 압력':v>=95?'중립권(95~105)':'<b class="up">약세권(95↓)</b> — 위험자산에 우호적';
+    const mv=c>=0.3?' · 오늘 강세':c<=-0.3?' · 오늘 약세':' · 오늘 보합';
+    return lv+mv;}},
  {id:"usdkrw", name:"원/달러 환율", unit:"원",
-  why:d=>{const c=d.chg??0, a=Math.abs(c);
-    const lv=a>=8?3:(a>=4?2:(a>=1?1:0));
-    const bars=`<span class="sig${c<0?' buyside':''}">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join("")}</span>`;
-    if(c>=1) return `환율 상승 → <b class="warn-t">외국인 매도 신호</b> ${bars} ${lv===3?"강":lv===2?"중":"약"}`;
-    if(c<=-1) return `환율 하락 → <b class="up">외국인 수급 우호</b> ${bars}`;
-    return `보합 — 외국인 수급 중립`;}},
+  desc:"1달러의 원화 가격 — 오르면 원화 약세, 외국인 이탈 유인",
+  why:d=>{const v=d.v??0,c=d.chg??0,a=Math.abs(c);
+    const lv=v>=1400?'<b class="warn-t">원화 약세 심화(1,400원↑)</b>':v>=1300?'약세권(1,300~1,400원)':'안정권(1,300원↓)';
+    const sig=a>=8?3:(a>=4?2:(a>=1?1:0));
+    const bars=`<span class="sig${c<0?' buyside':''}">${[1,2,3].map(i=>`<i class="${i<=sig?'on':''}"></i>`).join("")}</span>`;
+    const mv=c>=1?` · 상승 → <b class="warn-t">외국인 매도 신호</b> ${bars} ${sig===3?"강":sig===2?"중":"약"}`
+            :c<=-1?` · 하락 → <b class="up">외국인 수급 우호</b> ${bars}`:' · 보합';
+    return lv+mv;}},
  {id:"vix", name:"VIX 공포지수", unit:"", type:"gauge", max:50,
+  desc:"S&P500 옵션이 내다보는 향후 30일 변동성 — 높을수록 불안",
   zones:["안정","보통","경계","불안","공포"], cuts:[15,20,25,32],
   why:d=>{const v=d.v??0;
-    if(v<15) return `시장 <b class="up">안정</b> 구간`;
-    if(v<20) return `평상 수준의 변동성`;
-    if(v<32) return `<b class="warn-t">불안</b> — 변동성 확대 구간`;
-    return `<b class="dn">공포</b> — 급락 동반 가능 구간`;}},
+    if(v<15) return `<b class="up">안정</b> — 15 미만이면 시장이 급락을 걱정하지 않는 상태`;
+    if(v<20) return `보통 — 평상시 변동성 범위(15~20)`;
+    if(v<25) return `<b class="warn-t">경계</b> — 헤지 수요가 붙기 시작하는 구간(20~25)`;
+    if(v<32) return `<b class="warn-t">불안</b> — 변동성 확대, 반대매매 주의(25~32)`;
+    return `<b class="dn">공포</b> — 32 이상은 급락 동반 구간, 역사적으론 저점 근처인 경우도`;}},
  {id:"fng", name:"공포 & 탐욕 지수 (CNN)", unit:"", type:"gauge", max:100,
+  desc:"미 증시 투자심리 종합(0=극단공포 ~ 100=극단탐욕)",
   zones:["극단공포","공포","중립","탐욕","극단탐욕"], cuts:[25,45,55,75],
   why:d=>{const v=d.v??50;
-    if(v<=25) return `<b class="up">극단적 공포</b> → 역발상 <b>매수</b> 참고 구간`;
+    if(v<=25) return `<b class="up">극단적 공포</b> → 남들이 팔 때: 역발상 <b>매수</b> 참고 구간`;
     if(v<45) return `공포 우위 — 저가 매수 관심 구간`;
-    if(v<=55) return `중립`;
-    if(v<75) return `탐욕 우위 — 추격 매수 주의`;
-    return `<b class="dn">극단적 탐욕</b> → <b>매도</b>·차익실현 참고 구간`;}},
+    if(v<=55) return `중립 — 방향성 탐색 구간`;
+    if(v<75) return `탐욕 우위 — 추격 매수는 신중하게`;
+    return `<b class="dn">극단적 탐욕</b> → 과열: <b>매도</b>·차익실현 참고 구간`;}},
  {id:"btc", name:"비트코인 (BTC/USD)", unit:"$", fmt:v=>Number(v).toLocaleString("en-US"),
+  desc:"24시간 거래 — 위험자산 선호 심리의 선행 온도계",
   why:d=>{const c=d.chg??0;
-    if(c>=2) return `<b class="up">위험자산 선호 회복</b>의 선행 신호`;
-    if(c<=-2) return `<b class="warn-t">위험 회피</b> 심리 확산의 선행 신호`;
+    if(c>=2) return `<b class="up">위험선호 회복</b> — 주말·야간에도 움직여 주식시장의 선행 신호로 통용`;
+    if(c<=-2) return `<b class="warn-t">위험 회피</b> 확산 — 코인 급락은 주식 약세의 전조인 경우가 많음`;
     return `보합 — 위험선호 중립`;}},
  {id:"futures", name:"미국 주가지수 선물", unit:"", type:"fut",
+  desc:"정규장 개장 전 미 증시 방향의 가늠자 (24시간 거래)",
   why:d=>{const a=((d.sp??0)+(d.nq??0))/2;
-    if(a>=0.3) return `<b class="up">상승</b> — 미 증시 개장 전 분위기 우호적`;
-    if(a<=-0.3) return `<b class="dn">하락</b> — 개장 전 위험 회피 분위기`;
+    if(a>=0.3) return `<b class="up">상승</b> — 오늘 밤 미 증시 우호적 출발 예상`;
+    if(a<=-0.3) return `<b class="dn">하락</b> — 개장 전 위험 회피 분위기, 한국 증시에도 부담`;
     return `보합 출발 예상`;}},
  {id:"wti", name:"국제 유가 (WTI)", unit:"$",
-  why:d=>{const c=d.chg??0;
-    if(c>=3) return `<b class="warn-t">급등</b> — 기업 비용 부담·인플레 압력`;
-    if(c<=-3) return `<b class="dn">급락</b> — 경기침체 우려 신호일 수 있음`;
-    if(c>=1) return `상승 — 비용 압력 소폭 확대`;
-    if(c<=-1) return `하락 — 비용 부담 완화`;
-    return `보합`;}},
+  desc:"서부텍사스산 원유 — 세계 물가와 기업 비용의 핵심 변수",
+  why:d=>{const v=d.v??0,c=d.chg??0;
+    const lv=v>=90?'<b class="warn-t">고유가권(90$↑)</b> — 인플레 재점화 우려 구간':v>=70?'중간권(70~90$)':v>=60?'안정권(60~70$)':'<b class="dn">저유가(60$↓)</b> — 수요 둔화 신호일 수도';
+    const mv=c>=3?' · <b class="warn-t">급등</b> — 기업 비용 부담·물가 압력':c<=-3?' · <b class="dn">급락</b> — 경기침체 우려 신호':c>=1?' · 상승':c<=-1?' · 하락':' · 보합';
+    return lv+mv;}},
  {id:"leaders", name:"글로벌 주도주 마감", unit:"", type:"lead",
+  desc:"AI·성장주 대장 — 시장 위험선호의 체온계",
   why:d=>{const arr=d.list||[]; if(!arr.length) return "—";
     const up=arr.filter(x=>x.chg>0).length;
-    if(up===arr.length) return `주도주 <b class="up">동반 상승</b> — 위험선호 유지`;
-    if(up===0) return `주도주 <b class="dn">동반 하락</b> — 시장 추세 약화 신호`;
-    return `혼조 — 종목별 차별화`;}},
+    if(up===arr.length) return `주도주 <b class="up">동반 상승</b> — 위험선호 유지, 상승장 신뢰 강화`;
+    if(up===0) return `주도주 <b class="dn">동반 하락</b> — 대장이 꺾이면 시장 전체 추세 약화 신호`;
+    return `혼조 — 종목 장세, 지수보다 개별 종목 차별화`;}},
  {id:"cds", name:"한국 CDS 프리미엄 (5Y)", unit:"bp",
+  desc:"한국 국채의 부도 보험료 — 외국인이 보는 국가 신인도",
   why:d=>{const v=d.v??0;
-    if(v<30) return `<b class="up">낮음</b> — 한국 신용도에 대한 외부 시선 안정적`;
-    if(v<=50) return `보통 — 평상 범위`;
-    if(v<=80) return `<b class="warn-t">경계</b> — 대외 불안이 한국물에 반영되는 중`;
-    return `<b class="dn">높음</b> — 국가 신용 위험 인식 뚜렷`;}},
+    if(v<30) return `<b class="up">낮음(30bp↓)</b> — 한국 신용도에 대한 외부 시선 안정적`;
+    if(v<=50) return `보통(30~50bp) — 평상 범위`;
+    if(v<=80) return `<b class="warn-t">경계(50~80bp)</b> — 대외 불안이 한국물에 반영되는 중`;
+    return `<b class="dn">높음(80bp↑)</b> — 외환위기·긴축발작 때 보던 수준, 국가 신용 경계`;}},
 ];
-
 function gauge(def,v){
   const pos=Math.max(0,Math.min(100, v/def.max*100));
   const cutLbls=[0,...def.cuts,def.max];
@@ -529,7 +549,7 @@ function renderInd(){
                  : (d.v!==undefined&&d.v!==null);
     const why = hasVal ? def.why(d)
       : '<span class="flat">값을 받지 못했습니다 — 다음 시간 자동 갱신에서 재시도합니다</span>';
-    return `<div class="card"><div class="k">${def.name}</div>${body}
+    return `<div class="card"><div class="k">${def.name}</div><div class="kd">${def.desc||""}</div>${body}
       <div class="why">${why}</div></div>`;
   }).join("");
 }
@@ -546,14 +566,23 @@ function dataUrl(name){
 function bust(u){ return u+(u.includes("?")?"&":"?")+"t="+Date.now(); }
 function flowUrl(){ return dataUrl("flows.json"); }
 async function fetchFlows(){
-  const url=flowUrl(); if(!url) return null;
-  const res=await fetch(bust(url),{cache:"no-store"});
-  if(!res.ok) return null;                    // 아직 없으면 조용히 건너뜀
-  return await res.json();
+  const url=flowUrl();
+  if(!url){ FLOWS_MSG="데이터 주소를 알 수 없습니다 — 03 탭에서 피드 주소를 저장하세요."; return null; }
+  try{
+    const res=await fetch(bust(url),{cache:"no-store"});
+    if(res.status===404){ FLOWS_MSG="데이터 파일(flows.json)이 아직 없습니다 — Actions 의 '핵심 지표 수집'이 성공하면 이 자리에 표가 자동으로 채워집니다."; return null; }
+    if(!res.ok){ FLOWS_MSG="수급 데이터 응답 오류 (HTTP "+res.status+") — 다음 자동 갱신에서 재시도합니다."; return null; }
+    return await res.json();
+  }catch(e){ FLOWS_MSG="수급 데이터를 읽지 못했습니다 ("+e.message+")"; return null; }
 }
+let FLOWS_MSG="수집 서버 실행을 기다리는 중입니다.";
 function renderFlows(){
   const w=$("flowWrap"); if(!w) return;
-  if(!FLOWS){ w.innerHTML=""; return; }
+  if(!FLOWS){
+    w.innerHTML=`<div class="flowsec"><h3>외국인 · 기관 순매매 <small>당일 순매수/순매도 상위</small></h3>
+      <div class="fempty">${esc(FLOWS_MSG)}</div></div>`;
+    return;
+  }
   const dt=String(FLOWS.date||"");
   const dlbl=dt.length===8?`${dt.slice(4,6)}.${dt.slice(6,8)} 기준`:"";
   const eok=v=>{const a=Math.abs(v); return (v<0?"−":"+")+(a>=10000?(a/10000).toFixed(2)+"조":a.toLocaleString("ko-KR",{maximumFractionDigits:0})+"억");};
@@ -643,65 +672,80 @@ const COUNTRIES=[
 ];
 let DATA=SEED.slice(), filter="ALL", onlyHi=false;
 
+let newsQ="";
+function qTokens(){ return newsQ.split(/[,\s]+/).map(t=>t.trim()).filter(Boolean); }
+function hlight(text,tokens){
+  let out=esc(text);
+  tokens.forEach(t=>{
+    const re=new RegExp("("+t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");
+    out=out.replace(re,"<mark>$1</mark>");
+  });
+  return out;
+}
 function renderNews(){
-  const rows=DATA.filter(d=>filter==="ALL"||d.c===filter).filter(d=>!onlyHi||d.w>=3)
-    .sort((a,b)=>(b.w-a.w)||String(b.t).localeCompare(String(a.t)));
-  if(!rows.length){$("feed").innerHTML='<div class="empty">해당 조건의 헤드라인이 없습니다.</div>';return;}
-  $("feed").innerHTML=rows.map(d=>{
+  const tokens=qTokens();
+  let rows=DATA.filter(d=>filter==="ALL"||d.c===filter).filter(d=>!onlyHi||d.w>=3);
+  if(tokens.length){
+    rows=rows.filter(d=>tokens.some(t=>(d.h+" "+d.s).toLowerCase().includes(t.toLowerCase())))
+             .sort((a,b)=>String(b.t).localeCompare(String(a.t))||(b.w-a.w));
+  }else{
+    rows=rows.sort((a,b)=>(b.w-a.w)||String(b.t).localeCompare(String(a.t)));
+    // 검색이 없을 때는 국가별 4건까지만 (풀은 더 크게 수집돼 있음)
+    const cnt={};
+    rows=rows.filter(d=>{cnt[d.c]=(cnt[d.c]||0)+1; return cnt[d.c]<=4;});
+  }
+  const info=tokens.length
+    ?`<div class="qinfo">"${esc(tokens.join(", "))}" 일치 ${rows.length}건 — 서버가 모아둔 최근 기사 풀 전체에서 검색</div>`:"";
+  if(!rows.length){
+    $("feed").innerHTML=info+'<div class="empty">'+(tokens.length
+      ?"일치하는 헤드라인이 없습니다. 수집 풀은 매시간 갱신되니 다른 키워드로도 시도해 보세요."
+      :"해당 조건의 헤드라인이 없습니다.")+'</div>';
+    return;
+  }
+  $("feed").innerHTML=info+rows.map(d=>{
     const meter=[1,2,3].map(i=>`<i class="${i<=d.w?"on":""}"></i>`).join("");
+    const head=tokens.length?hlight(d.h,tokens):esc(d.h);
     return `<a class="item" href="${esc(d.u)}" target="_blank" rel="noopener noreferrer">
       <span class="spine"><span class="code">${esc(d.c)}</span><span class="time">${esc(d.t)}</span></span>
-      <span><span class="head">${esc(d.h)}</span>
+      <span><span class="head">${head}</span>
       <span class="meta"><span class="src">${esc(d.s)}</span> · 원문 열기 ↗</span></span>
       <span class="meter ${d.w>=3?"hi":""}">${meter}</span></a>`;
   }).join("");
 }
+$("newsQ").addEventListener("input",e=>{newsQ=e.target.value; renderNews();});
 document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{
   filter=b.dataset.f;document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderNews();}));
 $("onlyHi").addEventListener("change",e=>{onlyHi=e.target.checked;renderNews();});
 
-function nprompt(c){return `당신은 경제 뉴스 데스크입니다. 웹 검색으로 ${c.ko}(${c.c})의 최근 48시간 경제 뉴스를 조사하세요.
-허용 출처(이 범위 밖 제외): ${c.src}, 그리고 IMF·World Bank·OECD 등 국제기구.
-블로그·개인 투자 콘텐츠·광고성 매체·요약 수집 사이트는 제외합니다.
-시장 영향력이 큰 순서로 최대 5건. 우선순위: 통화정책·금리, 물가, 성장률, 고용, 무역, 환율, 대형 산업/기업.
-아래 JSON 배열만 출력하세요. 설명·코드펜스 없이 배열만.
-[{"h":"한국어 한 줄 헤드라인(45자 이내, 숫자 포함)","s":"출처 매체명","t":"MM.DD","u":"기사 원문 URL","w":1}]
-규칙: "u"는 검색 결과에 실제 등장한 URL 그대로. 지어내지 마세요. "w"는 중요도 1~3. 확실한 기사가 없으면 [].`;}
-
-async function fetchCountry(c){
-  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,
-      messages:[{role:"user",content:nprompt(c)}],
-      tools:[{type:"web_search_20250305",name:"web_search"}]})});
-  if(!res.ok) throw new Error("HTTP "+res.status);
-  const data=await res.json();
-  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
-  const m=text.replace(/```json|```/g,"").match(/\[[\s\S]*\]/); if(!m) return [];
-  let arr; try{arr=JSON.parse(m[0]);}catch(e){return [];}
-  return (Array.isArray(arr)?arr:[]).filter(x=>x&&x.h).map(x=>({
-    c:c.c,h:String(x.h).slice(0,80),s:x.s||"—",t:x.t||"",
-    w:Math.min(3,Math.max(1,Number(x.w)||1)),
-    u:(typeof x.u==="string"&&/^https?:\/\//.test(x.u))?x.u:"https://news.google.com/search?q="+encodeURIComponent(x.h)}));
+async function fetchNews(){
+  const url=dataUrl("news.json");
+  if(!url) throw new Error("데이터 주소를 알 수 없습니다");
+  const res=await fetch(bust(url),{cache:"no-store"});
+  if(!res.ok) throw new Error(res.status===404
+    ?"news.json 이 아직 없습니다 — Actions 의 '핵심 지표 수집'이 한 번 돌면 생성됩니다"
+    :"HTTP "+res.status);
+  return await res.json();
+}
+async function loadNews(quiet){
+  try{
+    const js=await fetchNews();
+    if(js&&Array.isArray(js.items)&&js.items.length){
+      DATA=js.items; renderNews();
+      const g=js.generated_at?new Date(js.generated_at):new Date();
+      $("stamp").textContent="서버 수집 "+g.toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+      $("seednote").textContent="수집 서버가 매시간 자동 갱신합니다. 출처는 연합뉴스·한국경제 등 신뢰 매체 우선.";
+      $("live").innerHTML="";
+      return true;
+    }
+  }catch(e){
+    if(!quiet) $("live").innerHTML=`<div class="err">${esc(e.message)}</div>`;
+  }
+  return false;
 }
 $("btn").addEventListener("click",async()=>{
   $("btn").disabled=true;
-  const pending=new Set(COUNTRIES.map(c=>c.c)), fresh=[], failed=[];
-  const tick=()=>{$("live").innerHTML=`<div class="loading">검색 중<span class="dot">…</span> 남은 국가: ${[...pending].join(" · ")||"없음"}</div>`;};
-  tick();
-  await Promise.all(COUNTRIES.map(async c=>{
-    try{const rows=await fetchCountry(c); rows.length?fresh.push(...rows):failed.push(c.c);}
-    catch(e){failed.push(c.c);}
-    pending.delete(c.c); if(fresh.length){DATA=fresh.slice();renderNews();} tick();
-  }));
-  if(fresh.length){
-    DATA=fresh; renderNews();
-    $("stamp").textContent="갱신 "+new Date().toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-    $("seednote").textContent="실시간 검색 결과입니다. 최근 48시간 기사 위주로 수집합니다.";
-    $("live").innerHTML=failed.length?`<div class="err">${failed.join(" · ")} 는 조건을 만족하는 기사를 찾지 못했습니다.</div>`:"";
-  }else{
-    $("live").innerHTML=`<div class="err">갱신 실패 — 이 버튼의 AI 검색은 Claude 앱에서 열었을 때만 동작합니다. 여기서는 저장된 헤드라인이 유지됩니다.</div>`;
-  }
+  $("live").innerHTML='<div class="loading">서버 수집본 확인 중<span class="dot">…</span></div>';
+  await loadNews(false);
   $("btn").disabled=false;
 });
 renderNews();
