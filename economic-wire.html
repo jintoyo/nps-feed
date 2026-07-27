@@ -559,11 +559,15 @@ let FLOWS=null;
 function dataUrl(name){
   const feed=$("feedUrl").value.trim();
   if(feed) return feed.replace(/[^\/]+$/, name);
-  // 주소 미입력 시: 이 페이지와 같은 폴더에서 찾는다 (GitHub Pages 동일 출처)
-  if(location.protocol==="https:"||location.protocol==="http:") return name;
+  // 주소 미입력 시: location.pathname 에서 폴더를 추출해 절대경로 생성
+  // (쿼리스트링·파라미터가 붙어도 안전)
+  if(location.protocol==="https:"||location.protocol==="http:"){
+    const dir=location.pathname.replace(/[^\/]+$/, "");
+    return location.origin + dir + name;
+  }
   return null;
 }
-function bust(u){ return u+(u.includes("?")?"&":"?")+"t="+Date.now(); }
+function bust(u){ return u+(u.includes("?")?"&":"?")+"_="+Date.now(); }
 function flowUrl(){ return dataUrl("flows.json"); }
 async function fetchFlows(){
   const url=flowUrl();
@@ -787,7 +791,10 @@ function isTarget(r){
 async function pullFeed(url,quiet){
   const stat=$("feedStat");
   if(!url){
-    if(location.protocol==="https:"||location.protocol==="http:") url="nps-latest.json";
+    if(location.protocol==="https:"||location.protocol==="http:"){
+      const dir=location.pathname.replace(/[^\/]+$/,"");
+      url=location.origin+dir+"nps-latest.json";
+    }
     else { if(!quiet) stat.textContent="주소를 먼저 넣고 저장하세요."; return; }
   }
   stat.textContent="확인 중…";
