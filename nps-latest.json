@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-08-25T20:14:10+09:00",
+ "generated_at": "2026-08-26T20:48:20+09:00",
  "period": {
-  "from": "20260712",
-  "to": "20260825"
+  "from": "20260713",
+  "to": "20260826"
  },
  "threshold": 1.0,
  "threshold_strong": 3.0,
@@ -135,9 +135,26 @@
   "효성중공업": 10.13,
   "후성": 5.09
  },
- "history_count": 538,
- "count": 9,
+ "history_count": 539,
+ "count": 10,
  "filings": [
+  {
+   "corp": "HDC",
+   "rcept_no": "20260826000408",
+   "date": "20260826",
+   "report": "주식등의대량보유상황보고서(약식)",
+   "filer": "국민연금공단",
+   "rate": 5.8,
+   "qty": 3466002.0,
+   "base": null,
+   "delta": null,
+   "delta_rel": null,
+   "prev": 6.08,
+   "prev_date": "20251001",
+   "delta_prev": -0.28,
+   "verdict": "신규",
+   "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000408"
+  },
   {
    "corp": "셀트리온",
    "rcept_no": "20260803000450",
