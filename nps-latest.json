@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-08-28T05:22:18+09:00",
+ "generated_at": "2026-08-29T06:12:28+09:00",
  "period": {
-  "from": "20260714",
-  "to": "20260827"
+  "from": "20260715",
+  "to": "20260828"
  },
  "threshold": 1.0,
  "threshold_strong": 3.0,
@@ -263,15 +263,15 @@
    "date": "20260731",
    "report": "주식등의대량보유상황보고서(약식)",
    "filer": "국민연금공단",
-   "rate": 7.63,
-   "qty": 48852699.0,
+   "rate": null,
+   "qty": null,
    "base": null,
    "delta": null,
    "delta_rel": null,
    "prev": null,
    "prev_date": null,
    "delta_prev": null,
-   "verdict": "신규",
+   "verdict": "확인필요",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260731000382"
   },
   {
