@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-09-01T02:36:05+09:00",
+ "generated_at": "2026-09-01T23:49:46+09:00",
  "period": {
-  "from": "20260718",
-  "to": "20260831"
+  "from": "20260719",
+  "to": "20260901"
  },
  "threshold": 1.0,
  "threshold_strong": 3.0,
@@ -135,9 +135,26 @@
   "효성중공업": 10.13,
   "후성": 5.09
  },
- "history_count": 539,
- "count": 10,
+ "history_count": 540,
+ "count": 11,
  "filings": [
+  {
+   "corp": "HS효성첨단소재",
+   "rcept_no": "20260901000231",
+   "date": "20260901",
+   "report": "주식등의대량보유상황보고서(약식)",
+   "filer": "국민연금공단",
+   "rate": 6.87,
+   "qty": 307690.0,
+   "base": null,
+   "delta": null,
+   "delta_rel": null,
+   "prev": 5.86,
+   "prev_date": "20260202",
+   "delta_prev": 1.01,
+   "verdict": "신규",
+   "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260901000231"
+  },
   {
    "corp": "HDC",
    "rcept_no": "20260826000408",
