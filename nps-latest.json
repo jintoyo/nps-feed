@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-15T23:58:35+09:00",
+ "generated_at": "2026-10-16T23:50:37+09:00",
  "period": {
-  "from": "20260901",
-  "to": "20261015"
+  "from": "20260902",
+  "to": "20261016"
  },
  "threshold": 1.0,
  "threshold_strong": 3.0,
@@ -136,7 +136,7 @@
   "후성": 5.09
  },
  "history_count": 659,
- "count": 120,
+ "count": 119,
  "filings": [
   {
    "corp": "한국항공우주",
@@ -1329,7 +1329,7 @@
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261002000277"
   },
   {
-   "corp": "동아쏘시오홀딩스",
+   "corp": "동아제약",
    "rcept_no": "20261002000273",
    "date": "20261002",
    "report": "주식등의대량보유상황보고서(약식)",
@@ -1339,9 +1339,9 @@
    "base": null,
    "delta": null,
    "delta_rel": null,
-   "prev": 10.47,
-   "prev_date": "20251001",
-   "delta_prev": -1.02,
+   "prev": null,
+   "prev_date": null,
+   "delta_prev": null,
    "verdict": "신규",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20261002000273"
   },
@@ -2160,23 +2160,6 @@
    "delta_prev": null,
    "verdict": "신규",
    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260908000302"
-  },
-  {
-   "corp": "HS효성첨단소재",
-   "rcept_no": "20260901000231",
-   "date": "20260901",
-   "report": "주식등의대량보유상황보고서(약식)",
-   "filer": "국민연금공단",
-   "rate": 6.87,
-   "qty": 307690.0,
-   "base": null,
-   "delta": null,
-   "delta_rel": null,
-   "prev": 5.86,
-   "prev_date": "20260202",
-   "delta_prev": 1.01,
-   "verdict": "신규",
-   "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260901000231"
   }
  ]
 }
